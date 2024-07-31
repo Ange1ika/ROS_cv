@@ -6,27 +6,21 @@ from husky_tidy_bot_cv.srv import \
     GetObjectPoseRequest, GetObjectPoseResponse, GetObjectPose, \
     GetObjectPointCloudRequest, GetObjectPointCloudResponse, GetObjectPointCloud
 from sensor_msgs.msg import PointCloud2
-from geometry_msgs.msg import PoseStamped, TransformStamped
+from geometry_msgs.msg import PoseStamped, TransformStamped, Quaternion
 from ros_numpy.geometry import numpy_to_pose, transform_to_numpy, numpy_to_transform, pose_to_numpy
-from visualization_msgs.msg import Marker
 from ros_numpy.point_cloud2 import pointcloud2_to_xyz_array, array_to_pointcloud2
-from object_pose_estimation import ObjectPoseEstimation, get_box_point_cloud, \
-    align_poses, align_poses_90
+from object_pose_estimation import ObjectPoseEstimation, get_box_point_cloud, align_poses, align_poses_90
 from visualization_msgs.msg import Marker
 import numpy as np
 from kas_utils.time_measurer import TimeMeasurer
 import open3d as o3d
 from threading import Lock
 
-
 def build_parser():
     parser = argparse.ArgumentParser()
-    
     parser.add_argument('--target-frame', type=str, default='realsense_gripper_link')
-    #parser.add_argument('--target-frame', type=str, default='base_link')
     parser.add_argument('-vis', '--enable-visualization', action='store_true')
     return parser
-
 
 class ObjectPoseEstimation_node:
     class PreviousResults:
@@ -36,10 +30,9 @@ class ObjectPoseEstimation_node:
             self.object_pose = None
 
     def __init__(self, object_point_cloud_topic, out_object_pose_topic,
-            out_pose_visualization_topic=None,
-            out_gt_pc_visualization_topic=None, out_pc_visualization_topic=None,
-            #target_frame='base_link', object_frame="object", publish_to_tf=True):
-            target_frame='realsense_gripper_link', object_frame="object", publish_to_tf=True):
+                 out_pose_visualization_topic=None,
+                 out_gt_pc_visualization_topic=None, out_pc_visualization_topic=None,
+                 target_frame='realsense_gripper_link', object_frame="object", publish_to_tf=True):
         self.object_point_cloud_topic = object_point_cloud_topic
         self.out_object_pose_topic = out_object_pose_topic
         self.out_pose_visualization_topic = out_pose_visualization_topic
@@ -48,18 +41,9 @@ class ObjectPoseEstimation_node:
         self.target_frame = target_frame
         self.object_frame = object_frame
         self.publish_to_tf = publish_to_tf
-        self.pose_marker_pub = rospy.Publisher(self.out_pose_visualization_topic, Marker,
-        queue_size=10)###
 
-
-        self.object_pose_pub = rospy.Publisher(
-            self.out_object_pose_topic, ObjectPose, queue_size=10)
-        
-        if self.out_pose_visualization_topic:
-            self.pose_visualization_pub = rospy.Publisher(
-                self.out_pose_visualization_topic, PoseStamped, queue_size=10)
-        else:
-            self.pose_visualization_pub = None
+        self.object_pose_pub = rospy.Publisher(self.out_object_pose_topic, ObjectPose, queue_size=10)
+        self.pose_marker_pub = rospy.Publisher(self.out_pose_visualization_topic, Marker, queue_size=10)
 
         if self.out_gt_pc_visualization_topic:
             self.gt_pc_visualization_pub = rospy.Publisher(
@@ -84,18 +68,14 @@ class ObjectPoseEstimation_node:
         self.prev_callback = ObjectPoseEstimation_node.PreviousResults()
 
         self.reason = None
-
         self.mutex = Lock()
-
         self.object_pose_estimators = dict()
 
-        # toy box
         self.object_pose_estimators[0] = ObjectPoseEstimation(
             get_box_point_cloud([0.07, 0.07, 0.07], points_per_cm=7),
             voxel_size=0.005,
             max_correspondence_distances=[0.04, 0.029, 0.018, 0.007])
 
-        # container
         self.object_pose_estimators[1] = ObjectPoseEstimation(
             o3d.io.read_point_cloud('/resources/data/container.pcd'),
             voxel_size=0.03,
@@ -114,16 +94,10 @@ class ObjectPoseEstimation_node:
         self.get_object_pose_srv = rospy.Service(
             "~get_object_pose", GetObjectPose, self.get_object_pose)
 
-        if self.pose_marker_pub is not None:
-            self.pose_marker_pub = rospy.Publisher(
-                self.out_pose_visualization_topic, Marker, queue_size=10)
-
     def get_object_pose(self, req: GetObjectPoseRequest):
-        rospy.loginfo(f"Received request for pose estimation "
-            f"for object id {req.object_id}")
+        rospy.loginfo(f"Received request for pose estimation for object id {req.object_id}")
 
-        rospy.loginfo(f"Request point cloud "
-            f"for object id {req.object_id}")
+        rospy.loginfo(f"Request point cloud for object id {req.object_id}")
         object_point_cloud_req = GetObjectPointCloudRequest()
         object_point_cloud_req.object_id = req.object_id
         object_point_cloud_resp = self.get_object_point_cloud(object_point_cloud_req)
@@ -131,8 +105,7 @@ class ObjectPoseEstimation_node:
         with self.mutex:
             if object_point_cloud_resp.return_code == 0:  # success
                 object_point_cloud_msg = object_point_cloud_resp.object_point_cloud
-                object_pose_msg, _, _ = self.estimate_pose_ros(
-                    object_point_cloud_msg, self.prev_service)
+                object_pose_msg, _, _ = self.estimate_pose_ros(object_point_cloud_msg, self.prev_service)
             else:
                 object_pose_msg = None
                 self.reason = f"Could not get point cloud for object id {req.object_id}"
@@ -141,89 +114,62 @@ class ObjectPoseEstimation_node:
             if object_pose_msg is not None:
                 resp.return_code = 0  # success
                 resp.object_pose = object_pose_msg
-                rospy.loginfo(f"Successfully returned pose "
-                    f"for object id {req.object_id}")
+                rospy.loginfo(f"Successfully returned pose for object id {req.object_id}")
             else:
                 resp.return_code = 1  # error
-                rospy.loginfo(f"Error occured while trying to estimate pose "
-                    f"for object id {req.object_id}: {self.reason}")
+                rospy.loginfo(f"Error occurred while trying to estimate pose for object id {req.object_id}: {self.reason}")
             return resp
 
     def callback(self, object_point_cloud_msg: ObjectPointCloud):
         with self.mutex:
             object_pose_msg, object_pose_estimator, object_pose_in_camera = \
                 self.estimate_pose_ros(object_point_cloud_msg, self.prev_callback)
-            if object_pose_estimator is not None and \
-                    object_pose_estimator.pc_down is not None:
-                extracted_pc_down = o3d.geometry.PointCloud(object_pose_estimator.pc_down)
-            else:
-                extracted_pc_down = None
 
         if object_pose_msg is not None:
             self.object_pose_pub.publish(object_pose_msg)
-            
-            if self.pose_visualization_pub is not None:###
-                    marker = self.create_pose_marker(object_pose_msg.pose)###
-                    self.pose_marker_pub.publish(marker)###
-                    
-    def create_pose_marker(self, pose):
+            self.publish_pose_markers(object_pose_msg.pose)
+
+    def publish_pose_markers(self, pose):
+        # Publish X-axis marker
+        x_marker = self.create_arrow_marker(pose, [1, 0, 0, 1], 0)
+        self.pose_marker_pub.publish(x_marker)
+
+        # Publish Y-axis marker
+        y_marker = self.create_arrow_marker(pose, [0, 1, 0, 1], 1)
+        y_marker.pose.orientation = self.rotate_marker_orientation(pose.orientation, np.pi/2, 'z')
+        self.pose_marker_pub.publish(y_marker)
+
+        # Publish Z-axis marker
+        z_marker = self.create_arrow_marker(pose, [0, 0, 1, 1], 2)
+        z_marker.pose.orientation = self.rotate_marker_orientation(pose.orientation, np.pi/2, 'y')
+        self.pose_marker_pub.publish(z_marker)
+
+    def create_arrow_marker(self, pose, color, marker_id):
         marker = Marker()
         marker.header.frame_id = self.target_frame
         marker.header.stamp = rospy.Time.now()
-        marker.ns = "object_pose_vis"
-        marker.id = 0
+        marker.ns = "object_pose"
+        marker.id = marker_id
         marker.type = Marker.ARROW
         marker.action = Marker.ADD
         marker.pose = pose
-        marker.scale.x = 0.5  # длина стрелки
-        marker.scale.y = 0.02  # ширина стрелки
-        marker.scale.z = 0.02 # высота стрелки
-        marker.color.a = 1.0  # прозрачность
-        marker.color.r = 1.0  # красный цвет
-        marker.color.g = 0.0
-        marker.color.b = 0.0
+        marker.scale.x = 0.1
+        marker.scale.y = 0.02
+        marker.scale.z = 0.02
+        marker.color.r = color[0]
+        marker.color.g = color[1]
+        marker.color.b = color[2]
+        marker.color.a = color[3]
         return marker
-           
-                
-        if self.gt_pc_visualization_pub is not None and \
-                object_pose_estimator is not None:
-            gt_pc = object_pose_estimator.gt_pc_down
-            gt_points = np.asarray(gt_pc.points, dtype=np.float32)
-            dtype = [('x', np.float32), ('y', np.float32), ('z', np.float32)]
-            gt_points = gt_points.view(dtype)
-            gt_point_cloud_msg = array_to_pointcloud2(gt_points,
-                stamp=object_point_cloud_msg.header.stamp, frame_id=self.object_frame)
-            self.gt_pc_visualization_pub.publish(gt_point_cloud_msg)
 
-        if self.pc_visualization_pub is not None and \
-                extracted_pc_down is not None and \
-                object_pose_in_camera is not None:
-            pc = extracted_pc_down
-            pc.transform(np.linalg.inv(object_pose_in_camera))
-            points = np.asarray(pc.points, dtype=np.float32)
-            dtype = [('x', np.float32), ('y', np.float32), ('z', np.float32)]
-            points = points.view(dtype)
-            point_cloud_msg = array_to_pointcloud2(points,
-                stamp=object_point_cloud_msg.header.stamp, frame_id=self.object_frame)
-            self.pc_visualization_pub.publish(point_cloud_msg)
+    def rotate_marker_orientation(self, orientation, angle, axis='x'):
+        quaternion = [orientation.x, orientation.y, orientation.z, orientation.w]
+        rotation = o3d.geometry.get_rotation_matrix_from_axis_angle([angle if axis == 'x' else 0, angle if axis == 'y' else 0, angle if axis == 'z' else 0])
+        rotated_quaternion = np.dot(rotation, quaternion)
+        return Quaternion(*rotated_quaternion)
 
-        if self.publish_to_tf and object_pose_msg is not None:
-            object_pose_tf = TransformStamped()
-            object_pose_tf.header = object_pose_msg.header
-            object_pose_tf.child_frame_id = self.object_frame
-            object_pose_tf.transform.translation.x = object_pose_msg.pose.position.x
-            object_pose_tf.transform.translation.y = object_pose_msg.pose.position.y
-            object_pose_tf.transform.translation.z = object_pose_msg.pose.position.z
-            object_pose_tf.transform.rotation = object_pose_msg.pose.orientation
-            self.tf_broadcaster.sendTransform(object_pose_tf)
-            
-            
-            
-
-    def estimate_pose_ros(self, object_point_cloud_msg: ObjectPointCloud,
-            prev: PreviousResults):
+    def estimate_pose_ros(self, object_point_cloud_msg: ObjectPointCloud, prev: PreviousResults):
         self.total_tm.start()
-
         self.reason = None
 
         class_id = object_point_cloud_msg.class_id

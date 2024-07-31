@@ -1,0 +1,368 @@
+    1  cd /usr/local/zed/tools/ZED Depth Viewer
+    2  cd u
+    3  cd /usr/local/zed
+    4  ls
+    5  cd tools
+    6  ls
+    7  Zed_Depth_Viewer
+    8  cd Zed_Depth_Viewer
+    9  Zed_Depth_Viewer
+   10  Zed_Explorer
+   11  sudo Zed_Explorer
+   12  /usr/local/zed/tools/ZED_Depth_Viewer
+   13  nvidia-smi
+   14  /usr/local/zed/tools/ZED_Depth_Viewer
+   15  sudo apt update
+   16  sudo apt install vlc
+   17  sudo apt update
+   18  vlc
+   19  /usr/local/zed/tools/ZED_Depth_Viewer
+   20  git clone https://github.com/andrey1908/kas_utils.git
+   21  sudo apt install git
+   22  git clone https://github.com/andrey1908/kas_utils.git
+   23  sudo apt install git
+   24  apt-get update
+   25  sudo apt-get update
+   26  sudo apt install git
+   27  git clone https://github.com/andrey1908/kas_utils.git
+   28  git clone https://github.com/andrey1908/husky_tidy_bot_cv
+   29  git clone https://github.com/andrey1908/BoT-SORT
+   30  sudo apt-get install -y nvidia-container-toolkit
+   31  cd docker/daemon.json
+   32  sudo apt install curl software-properties-common ca-certificates apt-transport-https -y
+   33  wget -O- https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor | sudo tee /etc/apt/keyrings/docker.gpg > /dev/null
+   34  echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable"| sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+   35  sudo apt update
+   36  apt-cache policy docker-ce
+   37  sudo apt install docker-ce -y
+   38  sudo systemctl status docker
+   39  cd docker
+   40  cd /etc/docker/daemon.json
+   41  cd /mnt/archive/docker
+   42  git clone https://github.com/Titrom025/ROS.git
+   43  ./docker_run.sh
+   44  cd ROS
+   45  ./docker_run.sh
+   46  sudo ./docker_run.sh
+   47  docker build -t noetic_ros .
+   48  sudo docker build -t noetic_ros .
+   49  cd .
+   50  cd ..
+   51  sudo apt-get install -y nvidia-container-toolkit
+   52  sudo nano /etc/docker/daemon.json
+   53  cd ROS
+   54  sudo docker build -t noetic_ros .
+   55  sudo apt-get install -y nvidia-container-toolkit
+   56  sudo ./docker_run.sh
+   57  nvidia-smi
+   58  docker build -t noetic_ros .
+   59  sudo docker build -t noetic_ros .
+   60  cd
+   61  ls
+   62  ls -h
+   63  sudo nano /etc/docker/daemon.json
+   64  ls -la
+   65  cd .docker
+   66  s
+   67  ls
+   68  ls -la
+   69  cd ..
+   70  cd etc/docker/daemon.json
+   71  cd /etc/docker/daemon.json
+   72  export CUDA_HOME=/usr/local/cuda
+   73  cd ROS
+   74  sudo docker build -t noetic_ros .
+   75  export FORCE_CUDA=1
+   76  sudo docker build -t noetic_ros .
+   77  cd /etc/docker/daemon.json
+   78  cd ..
+   79  cd /etc/docker/daemon.json
+   80  nano /etc/docker/daemon.json
+   81  sudo systemctl restart docker
+   82  sudo docker build -t noetic_ros .
+   83  cd ROS
+   84  sudo docker build -t noetic_ros .
+   85  nano /etc/docker/daemon.json
+   86  sudo docker build -t noetic_ros .
+   87  nvidia-smi
+   88  curl -fsS -o- https://deb.packages.mattermost.com/setup-repo.sh | sudo bash
+   89  sudo apt install mattermost-desktop
+   90  sudo apt upgrade mattermost-desktop
+   91  nvidia-smi
+   92  dpkg -l | grep -i nvidia
+   93  sudo apt-get remove --purge nvidia-*
+   94  sudo apt-get install nvidia-driver-550
+   95  sudo apt-get remove --purge nvidia-*
+   96  sudo apt-get autoremove
+   97  sudo apt-get autoclean
+   98  wget https://us.download.nvidia.com/XFree86/Linux-x86_64/550.54.15/NVIDIA-Linux-x86_64-550.54.15.run
+   99  /home/cogmodel/Downloads/NVIDIA-Linux-x86_64-550.54.15.run
+  100  sudo /home/cogmodel/Downloads/NVIDIA-Linux-x86_64-550.54.15.run
+  101  sudo run /home/cogmodel/Downloads/NVIDIA-Linux-x86_64-550.54.15.run
+  102  sudo ./NVIDIA-Linux-x86_64-550.54.15.run
+  103  docker build -t noetic_ros .
+  104  cd ROS
+  105  docker build -t noetic_ros .
+  106  sudo docker build -t noetic_ros .
+  107  nvidia-smi
+  108  sudo apt-get install -y nvidia-container-toolkit
+  109  nvidia-smi
+  110  sudo apt install nvidia-550
+  111  sudo apt install nvidia-550
+  112  sudo apt install nvidia-driver-550
+  113  nvidia-smi
+  114  sudo reboot
+  115  nvidia-smi
+  116  cd ROSS
+  117  cd ROS
+  118  docker build -t noetic_ros .
+  119  sudo docker build -t noetic_ros .
+  120  touch fle
+  121  rm fle
+  122  touch file.txt
+  123  cat /etc/docker/daemon.json
+  124  docker ps
+  125  sudo docker ps
+  126  cd ROS
+  127  sudo apt-get install -y nvidia-container-toolkit
+  128  cat /etc/docker/daemon.json
+  129  tree
+  130  sudo snap install tree
+  131  tree
+  132  docker build -t noetic_ros .
+  133  sudo docker build -t noetic_ros .
+  134  cat /etc/docker/daemon.json
+  135  Ssudo systemctl restart docker
+  136  sudo systemctl restart docker
+  137  cd ROS
+  138  docker rm -vf $(docker ps -aq)
+  139  sudo docker rm -vf $(docker ps -aq)
+  140  docker rmi -f $(docker images -aq)
+  141  ./docker_run.sh
+  142  sudo ./docker_run.sh
+  143  docker rm $(docker ps -aq)
+  144  docker rmi $(docker images -q)
+  145  sudo docker rmi $(docker images -q)
+  146  sudo docker rm $(docker ps -q)
+  147  docker ps
+  148  sudo docker ps
+  149  sudo docker images
+  150  sudo apt-get install -y nvidia-container-toolkit
+  151  sudo ./docker_run.sh
+  152  nvidia-smi
+  153  udo apt-get --fix-broken install
+  154  sudo apt-get --fix-broken install
+  155  sudo ./docker_run.sh
+  156  conda install -c nvidia cuda-python
+  157  sudo apt update
+  158  sudo apt install nvidia-cuda-toolkit
+  159  sudo ./docker_run.sh
+  160  cd ..
+  161  cd /usr/local/cuda
+  162  cd /usr/local
+  163  ls
+  164  cd cuda-12.1
+  165  ls
+  166  cd ..
+  167  mv cuda-12.1 cuda
+  168  sudo mv cuda-12.1 cuda
+  169  ls
+  170  cd .
+  171  cd ~
+  172  cd ROS
+  173  ./docker_run.sh
+  174  sudo ./docker_run.sh
+  175  [200~echo $CUDA_HOME
+  176  echo $CUDA_HOME
+  177  export CUDA_HOME=/usr/local/cuda
+  178  export PATH=$CUDA_HOME/bin:$PATH
+  179  export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
+  180  source ~/.bashrc
+  181  echo $CUDA_HOME
+  182  sudo ./docker_run.sh
+  183  export FORCE_CUDA=1
+  184  sudo ./docker_run.sh
+  185  import torch
+  186  print(torch.cuda.is_available())
+  187  pip install torch
+  188  nano Dockerfile 
+  189  sudo ./docker_run.sh
+  190  cat docker_run.sh
+  191  mkdir docker_data
+  192  sudo ./docker_run.sh
+  193  nvidia-smi
+  194  torch.version.cuda
+  195  nvcc --version
+  196  sudo apt-get update
+  197  nano Dockerfile 
+  198  sudo ./docker_run.sh
+  199  nano Dockerfile 
+  200  sudo ./docker_run.sh
+  201  sudo apt-get remove cuda
+  202  nano Dockerfile 
+  203  sudo ./docker_run.sh
+  204  docker build -t noetic_ros .
+  205  sudo docker build -t noetic_ros .
+  206  nano Dockerfile 
+  207  docker build -t noetic_ros .
+  208  sudo ./docker_run.sh
+  209  cat Dockerfile 
+  210  sudo apt-get --purge remove "*cublas*" "cuda*" "nsight*" "nvidia*"
+  211  sudo apt-get autoremove
+  212  sudo apt-get autoclean
+  213  sudo apt-get --purge remove "*cublas*" "cuda*" "nsight*" "nvidia*"
+  214  sudo apt-get autoremove
+  215  sudo apt-get autoclean
+  216  wget https://developer.download.nvidia.com/compute/cuda/12.1.0/local_installers/cuda_12.1.0_520.61.05_linux.run
+  217  sudo sh cuda_12.1.0_520.61.05_linux.run
+  218  wget https://developer.download.nvidia.com/compute/cuda/12.1.0/local_installers/cuda_12.1.0_linux.run
+  219  wget https://developer.download.nvidia.com/compute/cuda/12.1.0/local_installers/cuda_12.1.0_530.30.02_linux.run
+  220  sudo sh cuda_12.1.0_530.30.02_linux.run
+  221  cat /var/log/cuda-installer.log 
+  222  sudo bash -c "echo 'blacklist nouveau' > /etc/modprobe.d/blacklist-nouveau.conf"
+  223  sudo bash -c "echo 'options nouveau modeset=0' >> /etc/modprobe.d/blacklist-nouveau.conf"
+  224  sudo update-initramfs -u
+  225  sudo reboot
+  226  cd ROS
+  227  /home/cogmodel/ROS
+  228  sudo docker build -t noetic_ros .
+  229  nvidia-smi
+  230  -nvcc 
+  231  sudo apt-get install -y nvidia-container-toolkit
+  232  nvidia-smi
+  233  sudo apt-get install -y nvidia-container-toolkit
+  234  nvidia-smi
+  235  sudo apt-get install -y nvidia-toolkit
+  236  sudo docker build -t noetic_ros .
+  237  nvidia-smi
+  238  docker run -it --rm -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix --gpus all noetic_ros
+  239  sudo docker run -it --rm -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix --gpus all noetic_ros
+  240  sudo apt-get install -y nvidia-container-toolkit
+  241  distribution=$(. /etc/os-release;echo $ID$VERSION_ID) && curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add - && curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+  242  sudo apt-get update
+  243  sudo apt-get install -y nvidia-container-toolkit
+  244  sudo docker run -it --rm -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix --gpus all noetic_ros
+  245  nvidia-smi
+  246  sudo apt install nvidia-utils-535
+  247  sudo apt install nvidia-driver-535
+  248  sudo docker run -it --rm -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix --gpus all noetic_ros
+  249  nvidia-smi
+  250  sudo apt-get remove --purge '^nvidia-.*'
+  251  sudo apt-get autoremove
+  252  sudo apt-get autoclean
+  253  sudo add-apt-repository ppa:graphics-drivers/ppa
+  254  sudo apt-get update
+  255  ubuntu-drivers devices
+  256  sudo apt-get install nvidia-driver-535
+  257  sudo reboot
+  258  cd ROS
+  259  docker build -t noetic_ros .
+  260  sudo docker build -t noetic_ros .
+  261  nvidia-smi
+  262  sudo docker run -it --rm -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix --gpus all noetic_ros
+  263  apt list | grep toolkit
+  264  apt-get install -y nvidia-container-toolkit
+  265  sudo apt-get install -y nvidia-container-toolkit
+  266  docker run -it --rm -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix --gpus all noetic_ros
+  267  sudo docker run -it --rm -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix --gpus all noetic_ros
+  268  sudo groupadd docker
+  269  sudo usermod -aG docker $USER
+  270  docker run -it --rm -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix --gpus all noetic_ros
+  271  sudo docker run -it --rm -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix --gpus all noetic_ros
+  272  docker run -it --rm -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix --gpus all noetic_ros
+  273  sudo usermod -aG docker $USER
+  274  docker run -it --rm -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix --gpus all noetic_ros
+  275  gnome-session-quit
+  276  cd ROS/
+  277  ls
+  278  docker run -it --rm -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix --gpus all noetic_ros
+  279  cd ROS/
+  280  docker run -it --rm -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix --gpus all noetic_ros
+  281  nvidia-smi
+  282  nvcc --version
+  283  sudo apt install nvidia-cuda-toolkit
+  284  nvcc --version
+  285  nvidia-smi
+  286  docker run -it --rm -e DISPLAY=:1 -v /tmp/.X11-unix:/tmp/.X11-unix --gpus all noetic_ros
+  287  docker run -it --rm --gpus all noetic_ros
+  288  sudo apt-get install -y nvidia-container-toolkit
+  289  docker run -it --rm --gpus all noetic_ros
+  290  sudo systemctl stop docker
+  291  sudo systemctl stop docker.io
+  292  sudo systemctl start docker
+  293  docker run -it --rm --gpus all noetic_ros
+  294  sudo docker build -t noetic_ros .
+  295  docker build -t noetic_ros .
+  296  docker run -it --rm --gpus all noetic_ros
+  297  docker run -it --rm --gpus all noetic_ros /bin/bash
+  298  docker build -t noetic_ros .
+  299  docker run -it --rm --gpus all noetic_ros /bin/bash
+  300  docker image
+  301  docker image list
+  302  docker image prune
+  303  docker condainer prune
+  304  docker container
+  305  docker container 
+  306  docker container ls
+  307  docker image list
+  308  docker rmi noetic_ros
+  309  docker image list
+  310  docker image prune
+  311  docker build -t noetic_ros .
+  312  docker rmi noetic_ros
+  313  docker image list -a
+  314  docker image list 
+  315  docker image list --help
+  316  docker image list -a
+  317  docker images -a
+  318  docker container list -a
+  319  docker container list --help
+  320  docker prune
+  321  docker --help
+  322  docker ps
+  323  docker ps -a
+  324  docker build -t noetic_ros .
+  325  docker image list -a
+  326  docker rmi noetic_ros
+  327  docker image prune
+  328  docker rmi $(docker images -a --filter=dangling=true -q)
+  329  docker system prune -a
+  330  docker build -t noetic_ros .
+  331  nvcc --version
+  332  cat /etc/docker/daemon.json
+  333  ls /mnt/archive/
+  334  docker version
+  335  echo $DOCKER_BUILDKIT
+  336  DOCKER_BUILDKIT=0 docker build -t noetic_ros .
+  337  docker run -it --rm --gpus all noetic_ros 
+  338  ls
+  339  ls modified_files/
+  340  DOCKER_BUILDKIT=0 docker build -t noetic_ros .
+  341  docker run -it --rm --gpus all noetic_ros 
+  342  ls
+  343  ./docker_run.sh 
+  344  pwd
+  345  ./docker_run.sh 
+  346  mkdir resources/cache_clip
+  347  ./docker_run.sh 
+  348  mkdir resources/cache_torch
+  349  ./docker_run.sh 
+  350  xhost +
+  351  ./docker_run.sh 
+  352  docker run -it --name ros --rm -e DISPLAY=:1    -v /tmp/.X11-unix:/tmp/.X11-unix --gpus all    --mount type=bind,source=/home/cogmodel/ROS/docker_data/,target=/docker_data    --mount type=bind,source=/home/cogmodel/ROS/resources/data,target=/resources/data    --mount type=bind,source=/home/cogmodel/ROS/resources/models,target=/resources/models    --mount type=bind,source=/home/cogmodel/ROS/resources/cache_clip,target=/root/.cache/clip    --mount type=bind,source=/home/cogmodel/ROS/resources/cache_torch,target=/root/.torch/iopath_cache/    noetic_full /bin/bash
+  353  ./docker_run.sh 
+  354  git pull
+  355  git status
+  356  ping github.com
+  357  git pull
+  358  ./docker_run.sh 
+  359  ls
+  360  vim rviz_conf_full.rviz 
+  361  sudo apt install vim
+  362  vim rviz_conf_full.rviz 
+  363  ./docker_run.sh 
+  364  ls docker_data/testdata_rviz.rviz 
+  365  ./docker_run.sh 
+  366  history
+  367  cd ROS && vim rviz_conf_full.rviz 
+  368  history > history.txt

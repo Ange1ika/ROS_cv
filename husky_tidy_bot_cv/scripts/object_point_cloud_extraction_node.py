@@ -19,7 +19,8 @@ from object_point_cloud_extraction import ObjectPointCloudExtraction
 
 def build_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--target-frame', type=str, default='base_link')
+    #parser.add_argument('--target-frame', type=str, default='base_link')
+    parser.add_argument('--target-frame', type=str, default='realsense_gripper_link')
     parser.add_argument('-vis', '--enable-visualization', action='store_true')
     return parser
 
@@ -27,7 +28,8 @@ def build_parser():
 class ObjectPointCloudExtraction_node(ObjectPointCloudExtraction):
     def __init__(self, depth_info_topic, depth_topic, objects_topic,
             out_object_point_cloud_topic, out_visualization_topic=None,
-            target_frame='base_link', erosion_size=0, pool_size=2):
+            #target_frame='base_link', erosion_size=0, pool_size=2):
+            target_frame = 'realsense_gripper_link', erosion_size=0, pool_size=2):
         print("Waiting for depth info message...")
         depth_info_msg = rospy.wait_for_message(depth_info_topic, CameraInfo)
         K = np.array(depth_info_msg.K).reshape(3, 3)

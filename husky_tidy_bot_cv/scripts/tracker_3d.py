@@ -1,4 +1,4 @@
-from __future__ import annotations
+# from __future__ import annotations
 
 import numpy as np
 import cv2
@@ -10,12 +10,11 @@ from typing import List
 class TrackedObject:
     next_tracking_id = 0
 
-    def __init__(self, class_id, tracking_2d_id, pose, frame_id, obj_points):
+    def __init__(self, class_id, tracking_2d_id, pose, frame_id):
         self.class_id = class_id
         self.tracking_2d_id = tracking_2d_id  # (-1) - unspecified
         self.pose = pose
         self.frame_id = frame_id
-        self.obj_points = obj_points
 
         self.tracking_id = -1
         self.tracklet_len = 1  # increases only when matched with new object
@@ -26,7 +25,7 @@ class TrackedObject:
         self.tracking_id = TrackedObject.next_tracking_id
         TrackedObject.next_tracking_id += 1
 
-    def update(self, update_object: TrackedObject):
+    def update(self, update_object):
         assert self.tracking_id != -1
         assert self.class_id == update_object.class_id
 
@@ -37,7 +36,6 @@ class TrackedObject:
         self.tracking_2d_id = update_object.tracking_2d_id
         self.pose = k * self.pose + (1 - k) * update_object.pose
         self.frame_id = update_object.frame_id
-        self.obj_points = update_object.obj_points
 
         self.tracklet_len += 1
         self.visible_without_updates = 0
@@ -103,7 +101,7 @@ class Tracker3D:
     def update(self, camera_pose, depth, classes_ids, tracking_ids, masks_in_rois, rois):
         self.frame_id += 1
 
-        objects_poses, object_points_raw = self._get_objects_poses(depth, masks_in_rois, rois, camera_pose)
+        objects_poses = self._get_objects_poses(depth, masks_in_rois, rois, camera_pose)
         valid = ~np.isnan(objects_poses[:, 0])
         classes_ids = classes_ids[valid]
         if len(tracking_ids) > 0:
@@ -111,17 +109,13 @@ class Tracker3D:
         masks_in_rois = None  # is not used further
         rois = None  # is not used further
         objects_poses = objects_poses[valid]
-        object_points = []
-        for idx, is_valid in enumerate(valid):
-            if is_valid:
-                object_points.append(object_points_raw[idx])
 
         if len(tracking_ids) > 0:
-            new_objects = [TrackedObject(class_id, tracking_2d_id, pose, self.frame_id, obj_points)
-                for class_id, tracking_2d_id, pose, obj_points in zip(classes_ids, tracking_ids, objects_poses, object_points)]
+            new_objects = [TrackedObject(class_id, tracking_2d_id, pose, self.frame_id)
+                for class_id, tracking_2d_id, pose in zip(classes_ids, tracking_ids, objects_poses)]
         else:
-            new_objects = [TrackedObject(class_id, -1, pose, self.frame_id, obj_points)
-                for class_id, pose, obj_points in zip(classes_ids, objects_poses, object_points)]
+            new_objects = [TrackedObject(class_id, -1, pose, self.frame_id)
+                for class_id, pose in zip(classes_ids, objects_poses)]
 
         dists = self._compute_distances_matrix(new_objects)
         self._fuse_class_id(dists, new_objects)
@@ -153,15 +147,12 @@ class Tracker3D:
                 self.tracked_objects.append(new_object)
 
     def _get_objects_poses(self, depth, masks_in_rois, rois, camera_pose):
-        objects_poses_in_camera, object_points = self._get_objects_poses_in_camera(
+        objects_poses_in_camera = self._get_objects_poses_in_camera(
             depth, masks_in_rois, rois)
         R = camera_pose[:3, :3]
         t = camera_pose[:3, 3]
         objects_poses = np.matmul(R, objects_poses_in_camera.T).T + t
-        for i in range(len(object_points)):
-            if len(object_points[i]):
-                object_points[i] = np.matmul(R, object_points[i].T).T + t
-        return objects_poses, object_points
+        return objects_poses
 
     def _get_objects_poses_in_camera(self, depth, masks_in_rois, rois):
         fx = self.K[0, 0]
@@ -170,7 +161,6 @@ class Tracker3D:
         cy = self.K[1, 2]
         depth_scale = get_depth_scale(depth)
         object_poses = list()
-        object_points = list()
         for mask_in_roi, roi in zip(masks_in_rois, rois):
             if self.erosion_size > 0:
                 mask_in_roi = cv2.erode(mask_in_roi, self.erosion_element,
@@ -180,7 +170,6 @@ class Tracker3D:
             if np.count_nonzero(valid) < 15:
                 object_pose = np.array([np.nan] * 3)
                 object_poses.append(object_pose)
-                object_points.append(np.array([]))
                 continue
 
             v, u = np.where(mask_in_roi)
@@ -194,17 +183,12 @@ class Tracker3D:
             y = (v - cy) / fy * z
             object_pose = np.array([x.mean(), y.mean(), z.mean()])
             object_poses.append(object_pose)
-
-            single_object_points = list()
-            for (x_, y_, z_) in zip(x, y, z):
-                single_object_points.append([x_, y_, z_])
-            object_points.append(np.array(single_object_points))
         if len(object_poses) > 0:
             object_poses = np.array(object_poses)
         else:
             object_poses = np.empty((0, 3))
 
-        return object_poses, object_points
+        return object_poses
 
     def _compute_distances_matrix(self, new_objects: List[TrackedObject]):
         dists = np.empty((len(new_objects), len(self.tracked_objects)), dtype=float)

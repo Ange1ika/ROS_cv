@@ -16,7 +16,6 @@ import time
 import os
 import os.path as osp
 
-import cv2
 
 def build_parser():
     parser = argparse.ArgumentParser()
@@ -61,7 +60,6 @@ class BoTSORT_node(BoTSORT_wrapper):
         self.input_delays = list()
         self.output_stamps = list()
         self.output_delays = list()
-
 
     def start(self):
         self.segmentation_sub = message_filters.Subscriber(self.segmentation_topic, Objects)
@@ -118,7 +116,6 @@ class BoTSORT_node(BoTSORT_wrapper):
                     draw_objects(vis, scores, tracking_ids, masks=masks, customs=customs,
                         draw_masks=True, format="{s:.02f}, c: {c[0]}, t: {c[1]}",
                         palette=self.palette, color_by_object_id=True)
-
                 vis_msg = self.bridge.cv2_to_imgmsg(vis, encoding='bgr8')
                 vis_msg.header = segmentation_objects_msg.header
                 self.visualization_pub.publish(vis_msg)
@@ -140,9 +137,9 @@ if __name__ == "__main__":
         out_visualization_topic = "/tracking_vis"
     else:
         out_visualization_topic = None
-
+    
     image_topic = os.getenv("IMAGE_TOPIC")
-    tracking_node = BoTSORT_node("/segmentation_openseed",
+    tracking_node = BoTSORT_node("/segmentation",
         image_topic,
         "/tracking",
         out_visualization_topic=out_visualization_topic)

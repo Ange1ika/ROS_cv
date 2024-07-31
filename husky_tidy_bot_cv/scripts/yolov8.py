@@ -1,3 +1,6 @@
+ROOT_PATH = "/sources/catkin_ws/src/ultralytics/"
+import sys
+sys.path.insert(0, ROOT_PATH)
 import torch
 from ultralytics import YOLO
 from ultralytics.yolo.utils.ops import preprocess_results

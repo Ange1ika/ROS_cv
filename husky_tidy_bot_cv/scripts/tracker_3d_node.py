@@ -2,12 +2,12 @@ import rospy
 import tf2_ros
 import message_filters
 from std_msgs.msg import Header
-from sensor_msgs.msg import CameraInfo, Image, PointCloud2
+from sensor_msgs.msg import CameraInfo, Image
 from visualization_msgs.msg import Marker, MarkerArray
 from husky_tidy_bot_cv.msg import Objects, Objects3d
 from husky_tidy_bot_cv.srv import ResetRequest, ResetResponse, Reset
 from cv_bridge import CvBridge
-from conversions import from_objects_msg, to_objects3d_msg, create_point_cloud
+from conversions import from_objects_msg, to_objects3d_msg
 from tracker_3d import Tracker3D
 import numpy as np
 from kas_utils.time_measurer import TimeMeasurer
@@ -64,7 +64,19 @@ CATEGORIES_TO_TRACK = ['cube', 'container', 'toy cat']
 
 def build_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-only-segm', '--use-only-segmentation', action='store_true')
+    parser.add_argument('--objects-topics', type=str, nargs='+')
+    parser.add_argument('--depth-info-topics', type=str, nargs='+')
+    parser.add_argument('--depth-topics', type=str, nargs='+')
+    parser.add_argument('--out-tracked-objects-3d-topic', type=str)
+    parser.add_argument('--out-visualization-topic', type=str)
+
+    objects = parser.add_mutually_exclusive_group()
+    objects.add_argument('-segm', '--segmentation', action='store_true')
+    objects.add_argument('-track', '--tracking', action='store_true')
+    camera = parser.add_mutually_exclusive_group()
+    camera.add_argument('-real', '--realsense', action='store_true')
+    camera.add_argument('-zed', '--zed', action='store_true')
+
     parser.add_argument('-vis', '--enable-visualization', action='store_true')
     return parser
 
@@ -84,8 +96,8 @@ class Tracker3D_node(Tracker3D):
         self.out_tracked_objects_3d_topic = out_tracked_objects_3d_topic
         self.out_visualization_topic = out_visualization_topic
 
-        self.map_frame = "local_map_lidar"
-        self.camera_frame = "realsense_gripper_color_optical_frame"
+        self.map_frame = 'realsense_gripper_link'
+        #self.map_frame = "base_link"
 
         self.tracked_objects_3d_pub = \
             rospy.Publisher(self.out_tracked_objects_3d_topic, Objects3d, queue_size=10)
@@ -120,13 +132,11 @@ class Tracker3D_node(Tracker3D):
         self.output_stamps = list()
         self.output_delays = list()
 
-        self.point_cloud_pub = rospy.Publisher('point_cloud', PointCloud2, queue_size=10)
-
     def start(self):
         self.objects_sub = message_filters.Subscriber(self.objects_topic, Objects)
         self.depth_sub = message_filters.Subscriber(self.depth_topic, Image)
         self.sync_sub = message_filters.TimeSynchronizer(
-            [self.objects_sub, self.depth_sub], 10)
+            [self.objects_sub, self.depth_sub], 50)
         self.sync_sub.registerCallback(self.callback)
 
         self.reset_srv = rospy.Service("~reset", Reset, self.reset)
@@ -145,6 +155,8 @@ class Tracker3D_node(Tracker3D):
             self.input_stamps.append(objects_msg.header.stamp)
             self.input_delays.append(input_delay)
 
+            assert objects_msg.header.frame_id == depth_msg.header.frame_id
+
             with self.from_ros_tm:
                 _, classes_ids, tracking_ids, _, masks_in_rois, rois, _, _ = \
                     from_objects_msg(objects_msg)
@@ -152,7 +164,7 @@ class Tracker3D_node(Tracker3D):
 
             try:
                 transform_msg = self.tf_buffer.lookup_transform(
-                    self.map_frame, self.camera_frame, depth_msg.header.stamp,
+                    self.map_frame, depth_msg.header.frame_id, depth_msg.header.stamp,
                     timeout=rospy.Duration(0.2))
             except Exception as ex:
                 print(ex)
@@ -203,13 +215,6 @@ class Tracker3D_node(Tracker3D):
                 self.output_stamps.append(tracked_objects_3d_msg.header.stamp)
                 self.output_delays.append(output_delay)
                 self.tracked_objects_3d_pub.publish(tracked_objects_3d_msg)
-
-                point_arrays = []
-                for track_obj in self.tracked_objects:
-                    point_arrays.append((track_obj.tracking_id, track_obj.obj_points))
-                pc2_msg = create_point_cloud(point_arrays)
-
-                self.point_cloud_pub.publish(pc2_msg)
 
                 if self.visualization_pub is not None:
                     with self.vis_tm:
@@ -267,6 +272,47 @@ class Tracker3D_node(Tracker3D):
                     self.visualization_pub.publish(vis_msg)
 
 
+def complete_args(args):
+    assert not (args.segmentation and args.tracking)
+    assert not (args.realsense and args.zed)
+
+    objects_selected = (args.segmentation or args.tracking)
+    if args.objects_topics is None and not objects_selected:
+        args.tracking = True
+        objects_selected = True
+
+    camera_selected = (args.realsense or args.zed)
+    if (args.depth_info_topics is None or args.depth_topics is None) \
+            and not camera_selected:
+        args.realsense = True
+        camera_selected = True
+
+    if args.segmentation:
+        args.objects_topics = ["/segmentation"]
+    if args.tracking:
+        args.objects_topics = ["/tracking"]
+
+    if args.realsense:
+        args.depth_info_topics = ["/realsense_gripper/aligned_depth_to_color/camera_info"]
+        args.depth_topics = ["/realsense_gripper/aligned_depth_to_color/image_raw"]
+    if args.zed:
+        args.depth_info_topics = ["/zed_node/depth/camera_info"]
+        args.depth_topics = ["/zed_node/depth/depth_registered"]
+
+    if args.out_tracked_objects_3d_topic is None:
+        args.out_tracked_objects_3d_topic = "/tracked_objects_3d"
+
+    if not args.enable_visualization:
+        args.out_visualization_topic = None
+    if args.enable_visualization and args.out_visualization_topic is None:
+        args.out_visualization_topic = "/tracked_objects_3d_vis"
+
+    assert len(args.objects_topics)
+    assert len(args.depth_info_topics)
+    assert len(args.depth_topics)
+    assert args.out_tracked_objects_3d_topic is not None
+
+
 if __name__ == '__main__':
     time_str = time.strftime("%Y-%m-%d_%H.%M.%S")
 
@@ -278,23 +324,16 @@ if __name__ == '__main__':
     if len(unknown_args) > 0:
         raise RuntimeError("Unknown args: {}".format(unknown_args))
 
+    complete_args(args)
+
     rospy.init_node("tracker_3d")
-    if args.use_only_segmentation:
-        objects_topic = "/segmentation"
-    else:
-        objects_topic = "/tracking"
-    if args.enable_visualization:
-        out_visualization_topic = "/tracked_objects_3d_vis"
-    else:
-        out_visualization_topic = None
-
     tracker_3d_node = Tracker3D_node(
-        objects_topic,
-        "/realsense_gripper/aligned_depth_to_color/camera_info",
-        "/realsense_gripper/aligned_depth_to_color/image_raw",
+        args.objects_topics[0],
+        args.depth_info_topics[0],
+        args.depth_topics[0],
 
-        "/tracked_objects_3d",
-        out_visualization_topic=out_visualization_topic,
+        args.out_tracked_objects_3d_topic,
+        out_visualization_topic=args.out_visualization_topic,
         erosion_size=5)
     tracker_3d_node.start()
 

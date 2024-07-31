@@ -102,7 +102,6 @@ if __name__ == '__main__':
     )
 
     bridge = CvBridge()
-
     pub = rospy.Publisher("/objects_point_cloud_vis", PointCloud2, queue_size=10)
 
     print("Waiting for depth info message...")
