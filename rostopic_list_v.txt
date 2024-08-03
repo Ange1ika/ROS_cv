@@ -1,0 +1,51 @@
+cogmodel@ZBOX1:~/ROS$ docker exec -it ros bash
+root@c45b9be11b53:/sources/BoT-SORT# source /opt/ros/noetic/setup.bash
+root@c45b9be11b53:/sources/BoT-SORT# source /sources/catkin_ws/devel/setup.bash
+root@c45b9be11b53:/sources/BoT-SORT# rostopic list -v
+
+Published topics:
+ * /rosout_agg [rosgraph_msgs/Log] 1 publisher
+ * /rosout [rosgraph_msgs/Log] 10 publishers
+ * /aruco_image [sensor_msgs/Image] 1 publisher
+ * /object_pose_vis [visualization_msgs/Marker] 1 publisher
+ * /object_pose [husky_tidy_bot_cv/ObjectPose] 1 publisher
+ * /object_gt_points_vis [sensor_msgs/PointCloud2] 1 publisher
+ * /object_points_vis [sensor_msgs/PointCloud2] 1 publisher
+ * /tf [tf2_msgs/TFMessage] 2 publishers
+ * /initialpose [geometry_msgs/PoseWithCovarianceStamped] 1 publisher
+ * /move_base_simple/goal [geometry_msgs/PoseStamped] 1 publisher
+ * /clicked_point [geometry_msgs/PointStamped] 1 publisher
+ * /location_status [std_msgs/String] 1 publisher
+ * /tracking [husky_tidy_bot_cv/Objects] 1 publisher
+ * /tracking_vis [sensor_msgs/Image] 1 publisher
+ * /text_query_generation/status [actionlib_msgs/GoalStatusArray] 1 publisher
+ * /text_query_generation/result [communication_msgs/OpenSeeDSetterActionResult] 1 publisher
+ * /text_query_generation/feedback [communication_msgs/OpenSeeDSetterActionFeedback] 1 publisher
+ * /segmentation_labels [husky_tidy_bot_cv/Categories] 1 publisher
+ * /segmentation_openseed [husky_tidy_bot_cv/Objects] 1 publisher
+ * /segmentation_vis [sensor_msgs/Image] 1 publisher
+ * /clock [rosgraph_msgs/Clock] 1 publisher
+ * /realsense_gripper/color/camera_info [sensor_msgs/CameraInfo] 1 publisher
+ * /realsense_gripper/color/image_raw/compressed [sensor_msgs/CompressedImage] 1 publisher
+ * /realsense_gripper/aligned_depth_to_color/camera_info [sensor_msgs/CameraInfo] 1 publisher
+ * /realsense_gripper/aligned_depth_to_color/image_raw [sensor_msgs/Image] 1 publisher
+ * /tf_static [tf2_msgs/TFMessage] 1 publisher
+ * /rviz_1722612116792932775/compressed/parameter_descriptions [dynamic_reconfigure/ConfigDescription] 1 publisher
+ * /rviz_1722612116792932775/compressed/parameter_updates [dynamic_reconfigure/Config] 1 publisher
+ * /realsense_gripper/color/image_raw/mouse_click [geometry_msgs/PointStamped] 1 publisher
+
+Subscribed topics:
+ * /rosout [rosgraph_msgs/Log] 1 subscriber
+ * /object_point_cloud_vis [sensor_msgs/PointCloud2] 1 subscriber
+ * /realsense_gripper/aligned_depth_to_color/camera_info [sensor_msgs/CameraInfo] 2 subscribers
+ * /realsense_gripper/color/image_raw/compressed [sensor_msgs/CompressedImage] 4 subscribers
+ * /realsense_gripper/color/camera_info [sensor_msgs/CameraInfo] 1 subscriber
+ * /tf [tf2_msgs/TFMessage] 2 subscribers
+ * /tf_static [tf2_msgs/TFMessage] 2 subscribers
+ * /object_point_cloud [husky_tidy_bot_cv/ObjectPointCloud] 1 subscriber
+ * /segmentation_openseed [husky_tidy_bot_cv/Objects] 1 subscriber
+ * /text_query_generation/goal [communication_msgs/OpenSeeDSetterActionGoal] 1 subscriber
+ * /text_query_generation/cancel [actionlib_msgs/GoalID] 1 subscriber
+ * /segmentation_labels [husky_tidy_bot_cv/Categories] 1 subscriber
+
+

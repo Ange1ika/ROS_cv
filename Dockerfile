@@ -35,8 +35,7 @@ RUN pip install Cython
 RUN pip install -r requirements.txt
 RUN pip install git+https://github.com/openai/CLIP.git
 RUN pip install open3d
-
-
+RUN pip install nano
 
 ADD openseed_src/requirements.txt ./
 RUN python -m pip install 'git+https://github.com/MaureenZOU/detectron2-xyz.git'

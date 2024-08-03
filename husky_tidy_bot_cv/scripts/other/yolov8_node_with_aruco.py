@@ -14,6 +14,7 @@ from yolov8 import YOLOv8_wrapper
 from kas_utils.time_measurer import TimeMeasurer
 from kas_utils.visualization import draw_objects
 from kas_utils.masks import get_masks_rois, get_masks_in_rois
+import cv2.aruco as aruco
 import time
 import os
 import os.path as osp
@@ -84,7 +85,22 @@ class YOLOv8_node(YOLOv8_wrapper):
                 elif image_msg._type == "sensor_msgs/CompressedImage":
                     image = self.bridge.compressed_imgmsg_to_cv2(image_msg, desired_encoding='bgr8')
                 else:
-                    raise RuntimeError("Unkown message type")
+                    raise RuntimeError("Unknown message type")
+
+            # Обнаружение ArUco меток
+            corners, ids = detect_aruco_markers(image)
+            aruco_ids_list = []
+            aruco_corners_list = []
+
+            if ids is not None:
+                for i, marker_id in enumerate(ids):
+                    aruco_ids_list.append(int(marker_id[0]))  # Преобразование в int
+                    corners_flat = corners[i].flatten()
+                    aruco_corners_list.extend(corners_flat)
+                    # Визуализация меток на изображении
+                    cv2.polylines(image, [np.int32(corners[i])], True, (0, 255, 0), 2)
+                    cv2.putText(image, f"ID: {marker_id[0]}", tuple(corners[i][0][0]), 
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
             with self.segm_tm:
                 scores, classes_ids, boxes, masks = self.segment(image)
@@ -93,9 +109,13 @@ class YOLOv8_node(YOLOv8_wrapper):
                 rois = get_masks_rois(masks)
                 masks_in_rois = get_masks_in_rois(masks, rois)
                 height, width = image.shape[:2]
+                
+                # Заполнение расширенного сообщения Objects
                 segmentation_objects_msg = to_objects_msg(
                     image_msg.header, scores, classes_ids, np.empty((0,)), boxes,
                     masks_in_rois, rois, width, height)
+                segmentation_objects_msg.aruco_ids = aruco_ids_list
+                segmentation_objects_msg.aruco_corners = aruco_corners_list
             output_delay = rospy.get_rostime() - segmentation_objects_msg.header.stamp
             self.output_stamps.append(segmentation_objects_msg.header.stamp)
             self.output_delays.append(output_delay)
@@ -105,10 +125,21 @@ class YOLOv8_node(YOLOv8_wrapper):
                 with self.vis_tm:
                     vis = image.copy()
                     draw_objects(vis, scores, classes_ids, masks=masks,
-                        draw_scores=True, draw_masks=True, palette=self.palette)
-                vis_msg = self.bridge.cv2_to_imgmsg(vis, encoding='bgr8')
-                vis_msg.header = image_msg.header
-                self.visualization_pub.publish(vis_msg)
+                                draw_scores=True, draw_masks=True, palette=self.palette)
+                    vis_msg = self.bridge.cv2_to_imgmsg(vis, encoding='bgr8')
+                    vis_msg.header = image_msg.header
+                    self.visualization_pub.publish(vis_msg)
+
+
+
+                
+def detect_aruco_markers(image):
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_ARUCO_ORIGINAL)
+    parameters = aruco.DetectorParameters()
+    corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict,
+    parameters=parameters)
+    return corners, ids
 
 
 def complete_args(args):
@@ -120,7 +151,7 @@ def complete_args(args):
         camera_selected = True
 
     if args.realsense:
-        args.image_topic = "/realsense_gripper/color/image_raw/compressed"
+        args.image_topic = "/realsense_gripper/color/image_raw"
     if args.zed:
         args.image_topic = "/zed_node/left/image_rect_color"
     if args.compressed and camera_selected:
@@ -181,4 +212,8 @@ if __name__ == "__main__":
 
     print()
     del segmentation_node
+    
+    
+    
+    dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_ARUCO_ORIGINAL)
 

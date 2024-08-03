@@ -74,9 +74,9 @@ echo "Run object_pose_estimation_node.py"
 python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/object_pose_estimation_node.py -vis &
 sleep 1
 
-#echo "Run aruco_6dof_node.py"
-#python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/aruco_6dof_node.py -vis &
-#sleep 1
+echo "Run aruco_node.py"
+python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/aruco_node.py &
+sleep 1
 
 echo "Run rviz"
 rosrun rviz rviz -d $RVIZ_CONF &
@@ -96,7 +96,7 @@ do
 done
 
 
-python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/yolov8_node.py -vis &
+python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/openseed_node.py -vis &
 while :
 do
     if rostopic list -v | grep -q "/segmentation_vis \[sensor_msgs/Image\] 1 publisher"; then
