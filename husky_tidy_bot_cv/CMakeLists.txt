@@ -71,6 +71,7 @@ add_service_files(
   SetObjectId.srv
   GetObjectPointCloud.srv
   GetObjectPose.srv
+  DetectArucoMarker.srv  # new service
 )
 
 ## Generate actions in the 'action' folder
@@ -88,6 +89,9 @@ generate_messages(
   sensor_msgs
   actionlib_msgs
 )
+
+
+
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -118,12 +122,19 @@ generate_messages(
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
+
+# 05_08_2024
+### catkin_package(
+####  INCLUDE_DIRS include
+####  LIBRARIES husky_tidy_bot_cv
+### CATKIN_DEPENDS roscpp rospy std_msgs
+####  DEPENDS system_lib
+###)
+
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES husky_tidy_bot_cv
- CATKIN_DEPENDS roscpp rospy std_msgs
-#  DEPENDS system_lib
+  CATKIN_DEPENDS roscpp rospy std_msgs sensor_msgs geometry_msgs message_runtime
 )
+
 
 ###########
 ## Build ##

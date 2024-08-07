@@ -15,4 +15,4 @@ rosservice call /object_pose_estimation/get_object_pose
 realsense_gripper_link
 
 
-
+rosservice call /detect_aruco_marker "{marker_id: 999, image: ... }"

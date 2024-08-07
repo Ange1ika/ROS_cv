@@ -243,6 +243,20 @@ python3 object_pose_estimation_node.py -vis
 ```bash
 rosservice call /object_pose_estimation/get_object_pose <n_traking_id>
 ```
+
+7. Детекция Aruco-маркеров
+
+Для запуска узла необходимо сделать:
+
+```bash
+python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/aruco_node.py
+```
+
+Найти заданный aruco_id (Используется оригинальный словарь аруко-меток):
+
+```bash
+rosservice call /detect_aruco_marker "{marker_id: 42, image: ... }"
+```
 ## Project status
 v0.
 

@@ -1,1 +1,2 @@
-docker_*
+resources/
+cuda_12.1.0_530.30.02_linux.run

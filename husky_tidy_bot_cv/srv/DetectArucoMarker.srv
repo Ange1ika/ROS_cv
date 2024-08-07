@@ -1,0 +1,6 @@
+int32 marker_id          # ID метки ArUco для поиска
+---
+bool found               # Флаг, найден ли маркер
+geometry_msgs/Point center # Центр маркера
+float32 angle            # Угол ориентации маркера
+

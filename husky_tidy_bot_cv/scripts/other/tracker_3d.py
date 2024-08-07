@@ -7,6 +7,9 @@ import datetime
 import logging
 import os
 
+# Настройка логирования
+logging.basicConfig(level=logging.DEBUG)
+
 class TrackedObject:
     next_tracking_id = 0
 
@@ -20,13 +23,13 @@ class TrackedObject:
         self.tracklet_len = 1
         self.visible_without_updates = 0
 
-        #print(f'Created TrackedObject: {self.__dict__}')
+        logging.debug(f'Created TrackedObject: {self.__dict__}')
 
     def activate(self):
         assert self.tracking_id == -1
         self.tracking_id = TrackedObject.next_tracking_id
         TrackedObject.next_tracking_id += 1
-        #print(f'Activated TrackedObject with ID {self.tracking_id}')
+        logging.debug(f'Activated TrackedObject with ID {self.tracking_id}')
 
     def update(self, update_object):
         assert self.tracking_id != -1
@@ -43,7 +46,7 @@ class TrackedObject:
         self.tracklet_len += 1
         self.visible_without_updates = 0
 
-        #print(f'Updated TrackedObject {self.tracking_id} with data from another object.')
+        logging.debug(f'Updated TrackedObject {self.tracking_id} with data from another object.')
 
     def is_visible(self, camera_pose_inv, depth, K, D, margin=50, radius=10):
         pose_in_camera = np.matmul(camera_pose_inv, np.append(self.pose, 1))[:3]
@@ -78,8 +81,7 @@ class TrackedObject:
 
         thresh = 0.5
         visibility = rate > thresh
-        
-        #print(f'Visibility check for object {self.tracking_id}: {visibility}')
+        logging.debug(f'Visibility check for object {self.tracking_id}: {visibility}')
         return visibility
 
 
@@ -97,13 +99,13 @@ class Tracker3D:
         self.tracked_objects: List[TrackedObject] = list()
 
         assert np.all(self.D == 0), "Distorted images are not supported"
-        #print('Initialized Tracker3D')
+        logging.debug('Initialized Tracker3D')
 
     def reset(self):
         self.frame_id = -1
         self.tracked_objects = list()
         TrackedObject.next_tracking_id = 0
-        #print('Tracker3D reset')
+        logging.debug('Tracker3D reset')
 
     def update(self, camera_pose, depth, classes_ids, tracking_ids, masks_in_rois, rois):
         self.frame_id += 1
@@ -149,6 +151,13 @@ class Tracker3D:
             if j == -1:
                 new_object.activate()
                 self.tracked_objects.append(new_object)
+                
+                timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                filename = f"/resources/data/point_cloud_{timestamp}.npy"
+                logging.debug(f'Saving tracking ID {new_object.tracking_id} to {filename}')
+                os.makedirs(os.path.dirname(filename), exist_ok=True)
+                with open(filename, "a") as file:
+                    file.write(f"tracking_id: {new_object.tracking_id}\n")
 
     def _get_objects_poses(self, depth, masks_in_rois, rois, camera_pose):
         objects_poses_in_camera = self._get_objects_poses_in_camera(
@@ -188,13 +197,10 @@ class Tracker3D:
             
             point_cloud = np.vstack((x, y, z)).T
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            tracking_id = TrackedObject.next_tracking_id
-            filename = f"/resources/data/point_clouds/point_cloud_{timestamp}_id_{tracking_id}.npy"
-            #print(f'Saving point cloud with ID {tracking_id} to {filename}')
-            # Убедитесь, что директория существует
+            filename = f"/resources/data/point_cloud_{timestamp}.npy"
+            logging.debug(f'Saving point cloud to {filename}')
             os.makedirs(os.path.dirname(filename), exist_ok=True)
-            # Сохранение point cloud вместе с tracking_id
-            np.save(filename, {'point_cloud': point_cloud, 'tracking_id': tracking_id})
+            np.save(filename, point_cloud)
             
             object_pose = np.array([x.mean(), y.mean(), z.mean()])
             object_poses.append(object_pose)
@@ -211,7 +217,7 @@ class Tracker3D:
             for j, tracked_object in enumerate(self.tracked_objects):
                 dist = np.sum(np.square(new_object.pose - tracked_object.pose))
                 dists[i, j] = dist
-        #print(f'Distance matrix computed: {dists}')
+        logging.debug(f'Distance matrix computed: {dists}')
         return dists
     
     def _fuse_class_id(self, dists, new_objects: List[TrackedObject]):
@@ -219,7 +225,7 @@ class Tracker3D:
             for j, tracked_object in enumerate(self.tracked_objects):
                 if new_object.class_id != tracked_object.class_id:
                     dists[i, j] = np.inf
-        #print(f'Class ID fusion applied: {dists}')
+        logging.debug(f'Class ID fusion applied: {dists}')
 
     def _fuse_tracking_2d_id(self, dists, new_objects: List[TrackedObject]):
         for i, new_object in enumerate(new_objects):
@@ -227,17 +233,17 @@ class Tracker3D:
                 if new_object.tracking_2d_id == tracked_object.tracking_2d_id and \
                         new_object.tracking_2d_id != -1:
                     dists[i, j] = 0
-        #print(f'Tracking 2D ID fusion applied: {dists}')
+        logging.debug(f'Tracking 2D ID fusion applied: {dists}')
 
     def _match(self, dists):
         if dists.size == 0:
             new_to_tracked = np.full((dists.shape[0],), -1, dtype=int)
             tracked_to_new = np.full((dists.shape[1],), -1, dtype=int)
-            #print('Empty distance matrix, no matches.')
+            logging.debug('Empty distance matrix, no matches.')
             return new_to_tracked, tracked_to_new
 
         max_range = 0.25
         new_to_tracked, tracked_to_new = lap.lapjv(dists, cost_limit=(max_range * max_range), extend_cost=True, return_cost=False)
-        #print(f'Matching result: {new_to_tracked}, {tracked_to_new}')
+        logging.debug(f'Matching result: {new_to_tracked}, {tracked_to_new}')
         return new_to_tracked, tracked_to_new
 

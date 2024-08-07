@@ -55,7 +55,7 @@ def callback(depth_msg: Image, objects_msg: Objects):
         stamp=depth_msg.header.stamp, frame_id=depth_msg.header.frame_id)
     pub.publish(point_cloud_msg)
     # Сохранение pointcloud в файл
-    np.save('/resources/data/point_cloud.npy', all_points)
+    # np.save('/resources/data/point_cloud.npy', all_points)
 
 
 if __name__ == '__main__':
