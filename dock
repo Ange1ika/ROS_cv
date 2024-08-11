@@ -9,7 +9,7 @@ rostopic echo /realsense_gripper/color/image_raw
 /rviz_1719953228348663263/compressed/parameter_descriptions
 source /opt/ros/noetic/setup.bash
 
-rosservice call /object_point_cloud_extraction/set_object_id 
+rosservice call /object_point_cloud_extraction/set_object_id  
 rosservice call /object_pose_estimation/get_object_pose
 
 realsense_gripper_link

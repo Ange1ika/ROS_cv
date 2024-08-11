@@ -3,40 +3,26 @@ import cv2
 from kas_utils import get_depth_scale
 import lap
 from typing import List
+import datetime
+import logging
 import os
-import json
 
 class TrackedObject:
     next_tracking_id = 0
 
-    def __init__(self, class_id, tracking_2d_id, pose, frame_id, point_cloud=None):
+    def __init__(self, class_id, tracking_2d_id, pose, frame_id):
         self.class_id = class_id
         self.tracking_2d_id = tracking_2d_id
         self.pose = pose
         self.frame_id = frame_id
-        self.dimensions = None
-        self.point_cloud = point_cloud  # Добавляем point_cloud
-        self.tracking_id = -1  
-        self.next_tracking_id = TrackedObject.next_tracking_id  
-        
-        TrackedObject.next_tracking_id += 1
+
+        self.tracking_id = TrackedObject.next_tracking_id
         self.tracklet_len = 1
         self.visible_without_updates = 0
-        if point_cloud is not None:
-            self.calculate_dimensions() 
-        print("Init")
-    
-    def calculate_dimensions(self):
-        if self.point_cloud is not None:
-            # Calculate the minimum and maximum coordinates in each dimension
-            min_coords = np.min(self.point_cloud, axis=0)
-            max_coords = np.max(self.point_cloud, axis=0)
-            # Calculate the dimensions as the difference between max and min coordinates
-            self.dimensions = max_coords - min_coords
 
     def activate(self):
-        assert self.tracking_id == -1
-        self.tracking_id = self.next_tracking_id
+        assert self.tracking_id == TrackedObject.next_tracking_id
+        TrackedObject.next_tracking_id += 1
 
     def update(self, update_object):
         assert self.tracking_id != -1
@@ -49,13 +35,11 @@ class TrackedObject:
         self.tracking_2d_id = update_object.tracking_2d_id
         self.pose = k * self.pose + (1 - k) * update_object.pose
         self.frame_id = update_object.frame_id
-        self.point_cloud = update_object.point_cloud  # Обновляем point_cloud
-        self.calculate_dimensions()
 
         self.tracklet_len += 1
         self.visible_without_updates = 0
 
-        print(f'Updated TrackedObject {self.tracking_id} with data from another object.')
+        #print(f'Updated TrackedObject {self.tracking_id} with data from another object.')
 
     def is_visible(self, camera_pose_inv, depth, K, D, margin=50, radius=10):
         pose_in_camera = np.matmul(camera_pose_inv, np.append(self.pose, 1))[:3]
@@ -94,6 +78,7 @@ class TrackedObject:
         #print(f'Visibility check for object {self.tracking_id}: {visibility}')
         return visibility
 
+
 class Tracker3D:
     def __init__(self, erosion_size, K, D):
         self.erosion_size = erosion_size
@@ -108,44 +93,18 @@ class Tracker3D:
         self.tracked_objects: List[TrackedObject] = list()
 
         assert np.all(self.D == 0), "Distorted images are not supported"
-        print('Initialized Tracker3D')
+        #print('Initialized Tracker3D')
 
     def reset(self):
         self.frame_id = -1
         self.tracked_objects = list()
         TrackedObject.next_tracking_id = 0
-        print('Tracker3D reset')
+        #print('Tracker3D reset')
 
-    def save_to_json(self, directory):
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        
-        data = {
-            "frame_id": int(self.frame_id),
-            "tracked_objects": []
-        }
-        
-        for obj in self.tracked_objects:
-            obj_data = {
-                "tracking_id": int(obj.tracking_id),
-                "class_id": int(obj.class_id),
-                "pose": obj.pose.tolist(),
-                "point_cloud": [list(map(float, point)) for point in obj.point_cloud] if obj.point_cloud is not None else None,   # Сохраняем point_cloud
-                "dimensions": obj.dimensions.tolist() if obj.dimensions is not None else None,
-                "frame_id": int(obj.frame_id),
-                "tracklet_len": int(obj.tracklet_len),
-                "visible_without_updates": int(obj.visible_without_updates)
-            }
-            data["tracked_objects"].append(obj_data)
-
-        filename = f"{directory}/frame_{self.frame_id}.json"
-        with open(filename, 'w') as f:
-            json.dump(data, f, indent=4)
-    
     def update(self, camera_pose, depth, classes_ids, tracking_ids, masks_in_rois, rois):
         self.frame_id += 1
 
-        objects_poses, point_clouds = self._get_objects_poses(depth, masks_in_rois, rois, camera_pose)
+        objects_poses = self._get_objects_poses(depth, masks_in_rois, rois, camera_pose)
         valid = ~np.isnan(objects_poses[:, 0])
         classes_ids = classes_ids[valid]
         if len(tracking_ids) > 0:
@@ -153,14 +112,13 @@ class Tracker3D:
         masks_in_rois = None
         rois = None
         objects_poses = objects_poses[valid]
-        point_clouds = [pc for pc, v in zip(point_clouds, valid) if v]
 
         if len(tracking_ids) > 0:
-            new_objects = [TrackedObject(class_id, tracking_2d_id, pose, self.frame_id, point_cloud)
-                for class_id, tracking_2d_id, pose, point_cloud in zip(classes_ids, tracking_ids, objects_poses, point_clouds)]
+            new_objects = [TrackedObject(class_id, tracking_2d_id, pose, self.frame_id)
+                for class_id, tracking_2d_id, pose in zip(classes_ids, tracking_ids, objects_poses)]
         else:
-            new_objects = [TrackedObject(class_id, -1, pose, self.frame_id, point_cloud)
-                for class_id, pose, point_cloud in zip(classes_ids, objects_poses, point_clouds)]
+            new_objects = [TrackedObject(class_id, -1, pose, self.frame_id)
+                for class_id, pose in zip(classes_ids, objects_poses)]
 
         dists = self._compute_distances_matrix(new_objects)
         self._fuse_class_id(dists, new_objects)
@@ -188,15 +146,13 @@ class Tracker3D:
                 new_object.activate()
                 self.tracked_objects.append(new_object)
 
-        self.save_to_json("/resources/data/point_clouds")
-
     def _get_objects_poses(self, depth, masks_in_rois, rois, camera_pose):
-        objects_poses_in_camera, point_clouds = self._get_objects_poses_in_camera(
+        objects_poses_in_camera = self._get_objects_poses_in_camera(
             depth, masks_in_rois, rois)
         R = camera_pose[:3, :3]
         t = camera_pose[:3, 3]
         objects_poses = np.matmul(R, objects_poses_in_camera.T).T + t
-        return objects_poses, point_clouds
+        return objects_poses
 
     def _get_objects_poses_in_camera(self, depth, masks_in_rois, rois):
         fx = self.K[0, 0]
@@ -205,7 +161,6 @@ class Tracker3D:
         cy = self.K[1, 2]
         depth_scale = get_depth_scale(depth)
         object_poses = list()
-        point_clouds = list()  # Для хранения point_clouds
         for mask_in_roi, roi in zip(masks_in_rois, rois):
             if self.erosion_size > 0:
                 mask_in_roi = cv2.erode(mask_in_roi, self.erosion_element,
@@ -215,7 +170,6 @@ class Tracker3D:
             if np.count_nonzero(valid) < 15:
                 object_pose = np.array([np.nan] * 3)
                 object_poses.append(object_pose)
-                point_clouds.append(None)  # Добавляем None, если нет данных
                 continue
 
             v, u = np.where(mask_in_roi)
@@ -229,16 +183,23 @@ class Tracker3D:
             y = (v - cy) / fy * z
             
             point_cloud = np.vstack((x, y, z)).T
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            tracking_id = TrackedObject.next_tracking_id
+            filename = f"/resources/data/point_clouds/point_cloud_{timestamp}_id_{tracking_id}.npy"
+            #print(f'Saving point cloud with ID {tracking_id} to {filename}')
+           
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
+            # Сохранение point cloud вместе с tracking_id
+            np.save(filename, {'point_cloud': point_cloud, 'tracking_id': tracking_id})
+            
             object_pose = np.array([x.mean(), y.mean(), z.mean()])
             object_poses.append(object_pose)
-            point_clouds.append(point_cloud)  # Сохраняем point_cloud
-
         if len(object_poses) > 0:
             object_poses = np.array(object_poses)
         else:
             object_poses = np.empty((0, 3))
 
-        return object_poses, point_clouds
+        return object_poses
 
     def _compute_distances_matrix(self, new_objects: List[TrackedObject]):
         dists = np.empty((len(new_objects), len(self.tracked_objects)), dtype=float)
@@ -246,15 +207,15 @@ class Tracker3D:
             for j, tracked_object in enumerate(self.tracked_objects):
                 dist = np.sum(np.square(new_object.pose - tracked_object.pose))
                 dists[i, j] = dist
-        print(f'Distance matrix computed: {dists}')
+        #print(f'Distance matrix computed: {dists}')
         return dists
-
+    
     def _fuse_class_id(self, dists, new_objects: List[TrackedObject]):
         for i, new_object in enumerate(new_objects):
             for j, tracked_object in enumerate(self.tracked_objects):
                 if new_object.class_id != tracked_object.class_id:
                     dists[i, j] = np.inf
-        print(f'Class ID fusion applied: {dists}')
+        #print(f'Class ID fusion applied: {dists}')
 
     def _fuse_tracking_2d_id(self, dists, new_objects: List[TrackedObject]):
         for i, new_object in enumerate(new_objects):
@@ -275,3 +236,4 @@ class Tracker3D:
         new_to_tracked, tracked_to_new = lap.lapjv(dists, cost_limit=(max_range * max_range), extend_cost=True, return_cost=False)
         #print(f'Matching result: {new_to_tracked}, {tracked_to_new}')
         return new_to_tracked, tracked_to_new
+
