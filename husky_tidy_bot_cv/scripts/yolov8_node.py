@@ -120,7 +120,7 @@ def complete_args(args):
         camera_selected = True
 
     if args.realsense:
-        args.image_topic = "/realsense_gripper/color/image_raw/compressed"
+        args.image_topic = "IMAGE_TOPIC"
     if args.zed:
         args.image_topic = "/zed_node/left/image_rect_color"
     if args.compressed and camera_selected:
@@ -181,4 +181,3 @@ if __name__ == "__main__":
 
     print()
     del segmentation_node
-

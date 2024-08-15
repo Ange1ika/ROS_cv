@@ -62,6 +62,7 @@ add_message_files(
   Categories.msg
   ObjectPose.msg
   ObjectPose_new.msg
+  Marker.msg
 )
 
 ## Generate services in the 'srv' folder

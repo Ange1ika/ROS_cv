@@ -1,54 +1,69 @@
 FROM nvidia/cuda:11.7.1-devel-ubuntu20.04
 
-RUN chmod 1777 /tmp
-ENV TZ=Etc/UTC
-ARG DEBIAN_FRONTEND=noninteractive 
-RUN apt-get update && apt-get install -y lsb-core curl
-RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
-RUN curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -
+# Отключение интерактивного режима установки
+ARG DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=$DEBIAN_FRONTEND
 
-# Добавление репозитория aruco_ros и установка
-RUN apt-get update && apt-get install -y
-    
+# Задание временной зоны
+ENV TZ=Europe/Moscow
+
+# Основные зависимости и утилиты
 RUN apt-get update && apt-get install -y \
-    ros-noetic-desktop-full \
-    ros-noetic-cv-bridge \
-#    ros-noetic-image-transport \
-#    ros-noetic-vision-opencv \
+    lsb-core \
+    curl \
+    gnupg2 \
+    software-properties-common \
+    tzdata \
     mesa-utils \
     libgl1-mesa-glx \
     python-dev \
-    build-essential wget git
+    build-essential \
+    wget \
+    git
 
+# Установка ROS2 Foxy и ROS1 Noetic
+RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add - && \
+    sh -c 'echo "deb http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros2-latest.list' && \
+    sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list' && \
+    apt-get update && apt-get install -y \
+    ros-foxy-desktop \
+    ros-noetic-desktop-full \
+    python3-colcon-common-extensions
+
+# Настройка окружения ROS
+RUN echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc && \
+    echo "source /opt/ros/foxy/setup.bash" >> ~/.bashrc
+
+# Установка Miniconda
 ENV CONDA_DIR /opt/conda
 ENV PATH=$CONDA_DIR/bin:$PATH
 ENV PIP_ROOT_USER_ACTION=ignore
 RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh && \
-    /bin/bash ~/miniconda.sh -b -p /opt/conda
+    /bin/bash ~/miniconda.sh -b -p /opt/conda && \
+    rm ~/miniconda.sh && \
+    conda install python=3.8.10
 
-RUN conda install python=3.8.10
+# Установка PyTorch и других зависимостей
+RUN pip install torch==2.0.0+cu117 torchvision==0.15.1+cu117 --index-url https://download.pytorch.org/whl/cu117 && \
+    pip install Cython open3d nano git+https://github.com/openai/CLIP.git
 
-RUN pip install torch==2.0.0+cu117 torchvision==0.15.1+cu117  --index-url https://download.pytorch.org/whl/cu117
+# Установка зависимостей из requirements.txt
 ADD requirements.txt ./
-
-RUN pip install Cython
 RUN pip install -r requirements.txt
-RUN pip install git+https://github.com/openai/CLIP.git
-RUN pip install open3d
-RUN pip install nano
 
-ADD openseed_src/requirements.txt ./
-RUN python -m pip install 'git+https://github.com/MaureenZOU/detectron2-xyz.git'
-RUN pip install git+https://github.com/cocodataset/panopticapi.git
-RUN python -m pip install -r requirements.txt
-RUN pip install albumentations Pillow==9.5.0 wandb open_clip_torch
+# Установка специфических зависимостей проекта
+RUN python -m pip install 'git+https://github.com/MaureenZOU/detectron2-xyz.git' && \
+    pip install git+https://github.com/cocodataset/panopticapi.git && \
+    pip install albumentations Pillow==9.5.0 wandb open_clip_torch
 
+# Установка rospkg через conda
 RUN conda install -c conda-forge rospkg
-RUN apt-get -y install software-properties-common 
 
-# ADD init_clip_model.py /sources/init_clip_model.py
-# RUN python /sources/init_clip_model.py
+# Установка ROS1 Bridge
+RUN apt-get update && apt-get install -y \
+    ros-foxy-ros1-bridge
 
+# Сборка и настройка ROS пакетов
 # git clone https://github.com/andrey1908/kas_utils.git
 ADD kas_utils/ /sources/kas_utils/
 
@@ -67,11 +82,7 @@ ADD modified_files/fast_reid_interfece.py /sources/BoT-SORT/fast_reid/fast_reid_
 RUN pip install .
 
 RUN pip install open3d 
-
-RUN pip install -U albumentations
-
-
-
+RUN pip install numpy==1.23.5
 
 ADD communication_msgs/ /sources/catkin_ws/src/communication_msg
 ADD openseed_src/openseed/body/encoder/ops/ /sources/catkin_ws/src/openseed_src/openseed/body/encoder/ops
@@ -79,19 +90,12 @@ ADD openseed_src/openseed/body/encoder/ops/ /sources/catkin_ws/src/openseed_src/
 RUN ["/bin/bash", "-c", "source /opt/ros/noetic/setup.bash && \
     cd /sources/catkin_ws/src/openseed_src/openseed/body/encoder/ops && \
     ./make.sh"]
-    
-# Установка ROS 2 (Foxy) и ROS 1 Bridge
-RUN sh -c 'echo "deb http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros2-latest.list' && \
-    curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add - && \
-    apt-get update && apt-get install -y \
-    ros-foxy-desktop \
-    ros-foxy-ros1-bridge   
+   
 
 #git clone https://github.com/andrey1908/husky_tidy_bot_cv
 ADD husky_tidy_bot_cv/ /sources/catkin_ws/src/husky_tidy_bot_cv/
 ADD modified_files/bot_sort_node.py /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/bot_sort_node.py
 
-RUN pip install numpy==1.23.5
 
 RUN ["/bin/bash", "-c", "source /opt/ros/noetic/setup.bash && \
     cd /sources/catkin_ws/ && \
@@ -117,8 +121,6 @@ RUN git clone https://github.com/andrey1908/ultralytics.git /sources/catkin_ws/s
 RUN pip install -e /sources/catkin_ws/src/ultralytics
 
 COPY entrypoint.sh /entrypoint.sh
-COPY entrypoint_rosbridge.sh /entrypoint_rosbridge.sh
-COPY ros2_play_bag.sh /ros2_play_bag.sh
-RUN chmod +x /entrypoint.sh /ros2_play_bag.sh /entrypoint_rosbridge.sh 
-CMD ["/bin/bash", "-c", "/entrypoint.sh & /ros2_play_bag.sh & /entrypoint_rosbridge.sh & wait"]
-#CMD ["/bin/bash", "/entrypoint.sh"]
+RUN chmod +x /entrypoint.sh
+CMD ["/bin/bash", "/entrypoint.sh"]
+

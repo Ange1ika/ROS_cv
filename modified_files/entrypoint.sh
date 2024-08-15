@@ -2,39 +2,66 @@
 
 source /opt/ros/noetic/setup.bash
 source /sources/catkin_ws/devel/setup.bash
+#source /opt/ros/foxy/setup.bash
 
 # Bag 1
-#export FIXED_FRAME=base_link
-export FIXED_FRAME=camera # ros2
+export FIXED_FRAME=base_link
 #export FIXED_FRAME=realsense_gripper_link
-export TARGET_BAG=сoutput.bag
-#export RVIZ_CONF=/resources/data/testbag_full.rviz  
-
-export RVIZ_CONF=/resources/data/rviz_full_conf_2.rviz
-#export DEPTH_TOPIC=/realsense_gripper/aligned_depth_to_color/image_raw  
-
-export DEPTH_TOPIC=/camera2/camera2/color/image_raw/compressedDepth  #топик на ros2
+export TARGET_BAG=/resources/data/output.bag
+export RVIZ_CONF=/resources/data/testbag_full.rviz
 #export DEPTH_TOPIC=/realsense_gripper/aligned_depth_to_color/image_raw
-export IMAGE_TOPIC=/camera2/camera2/color/image_raw/compressed  #топик на ros2
-export INFO_TOPIC=/camera2/camera2/depth/camera_info
-#export IMAGE_TOPIC=/realsense_gripper/color/image_raw/compressed
+
+
+export DEPTH_TOPIC=/realsense_gripper/aligned_depth_to_color/image_raw
+export IMAGE_TOPIC=/realsense_gripper/color/image_raw/compressed
 
 
 #export IMAGE_TOPIC=/realsense_gripper/color/image_raw
 export DEPTH_TO_POINT_CLOUD_ALLOW_PYTHON_IMPLEMENTATION=1
 
+# Bag 2
+# export FIXED_FRAME=front_bumper_link
+# export TARGET_BAG=/resources/data/2023-08-29-11-02-40_0.bag
+# export RVIZ_CONF=/resources/data/rviz_ros_data290823.rviz
+# export DEPTH_TOPIC=/realsense_gripper/aligned_depth_to_color/image_raw
+# export IMAGE_TOPIC=/realsense_gripper/color/image_raw/compressed
+
+# Bag 3
+# export FIXED_FRAME=local_map_lidar
+# export TARGET_BAG=/resources/data/rosbag2_2023_11_21-15_04_43.bag
+# export RVIZ_CONF=/resources/data/testbag_full.rviz
+# export DEPTH_TOPIC=/realsense_gripper/aligned_depth_to_color/image_raw
+# export IMAGE_TOPIC=/realsense_gripper/color/image_raw/compressed
+
+# Bag 4
+# export IMAGE_TOPIC=/zedm_front/zed_node/left/image_rect_color/compressed
+# export FIXED_FRAME=local_map_lidar
+# export TARGET_BAG=/resources/data/2023-12-22-16-42-22.bag
+# export RVIZ_CONF=/resources/data/2023-12-22-16-42-22.rviz
+# export DEPTH_TOPIC=/zedm_front/zed_node/depth/depth_registered
+
+# export RVIZ_CONF=/resources/data/2023-12-22-16-42-22_v2.rviz
+# export RVIZ_CONF=/resources/data/2023-12-22-16-42-22_test.rviz
+# export RVIZ_CONF=/resources/data/2023-12-22-16-42-22_test_v2.rviz
+# export RVIZ_CONF=/resources/data/testbag_full.rviz
+# export DEPTH_TOPIC=/zedm_front/zed_node/depth/depth_registered
+
+#ros2 run ros1_bridge dynamic_bridge &
+
 echo "Run roscore"
 roscore &
 sleep 1
 
-#echo "Run bag play"
-#rosbag play $TARGET_BAG -i
+echo "Run bag play"
+rosbag play $TARGET_BAG -i
 #rosbad play -l /resources/data/bags.txt
-#sleep 1
+sleep 1
 
-#echo "Run aruco_node.py"
+echo "Run aruco_node.py"
 #python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/aruco_detection_service.py &
-#sleep 1
+python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/aruco_node.py &
+sleep 1
+
 
 echo "Run object_point_cloud_extraction_node.py"
 python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/object_point_cloud_extraction_node.py -vis &
@@ -53,17 +80,13 @@ echo "Run tracker_3d_node.py"
 python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/tracker_3d_node.py -vis &
 sleep 1
 
-echo "Run object_pose_estimation_node.py" 
+echo "Run object_pose_estimation_node.py"
 python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/object_pose_estimation_node.py -vis &
 sleep 1
 
-echo "Run aruco_node.py"
-python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/aruco_node.py &
-sleep 1
-
-echo "Run aruco_seg_fusion"
-python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/combine_data.py &
-sleep 1
+#echo "Run aruco_node.py"
+#python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/aruco_node.py &
+#sleep 1
 
 
 # Ожидание публикации изображения с метками ArUco
@@ -79,9 +102,13 @@ sleep 1
 #done
 
 
-#echo "Run rviz"
-#rosrun rviz rviz -d $RVIZ_CONF &
-#sleep 1
+echo "Run rviz"
+rosrun rviz rviz -d $RVIZ_CONF &
+sleep 1
+
+echo "Run_combine"
+python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/proba.py &
+
 
 
 python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/text_query_generation_server.py &
@@ -109,7 +136,16 @@ do
     fi
 done
 
-#rosbag play $TARGET_BAG -r 0.5 -s 5 --pause
+
+
+
+
+rosbag play $TARGET_BAG -r 0.5 -s 5 --pause
 # rosbag play $TARGET_BAG -r 0.5 -s 5 -u 5
 exec /bin/bash
+
+
+
+
+
 

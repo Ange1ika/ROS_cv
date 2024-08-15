@@ -108,7 +108,7 @@ if __name__ == '__main__':
 
     print("Waiting for depth info message...")
     depth_info_msg = rospy.wait_for_message(
-        "/realsense_gripper/aligned_depth_to_color/camera_info", CameraInfo)
+        "INFO_TOPIC", CameraInfo)
     K = np.array(depth_info_msg.K).reshape(3, 3)
     D = np.array(depth_info_msg.D)
     assert np.all(D == 0)
@@ -128,7 +128,7 @@ if __name__ == '__main__':
         erosion_element = None
 
     depth_sub = message_filters.Subscriber(
-        "/realsense_gripper/aligned_depth_to_color/image_raw", Image)
+        "DEPTH_TOPIC", Image)
     objects_sub = message_filters.Subscriber("/segmentation", Objects)
     sync_sub = message_filters.TimeSynchronizer([depth_sub, objects_sub], queue_size=50)
     sync_sub.registerCallback(callback)

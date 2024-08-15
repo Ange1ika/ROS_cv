@@ -1,5 +1,5 @@
 import rospy
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import CompressedImage
 from husky_tidy_bot_cv.msg import Objects
 from std_srvs.srv import Empty
 from std_msgs.msg import Int32
@@ -12,10 +12,11 @@ import cv2
 import time
 import os
 import os.path as osp
+import message_filters
 
 class BoTSORT_node(BoTSORT_wrapper):
     def __init__(self, segmentation_topic, image_topic, out_tracking_topic,
-            out_visualization_topic=None, **kwargs):
+                 out_visualization_topic=None, **kwargs):
         super().__init__(**kwargs)
 
         self.segmentation_topic = segmentation_topic
@@ -28,13 +29,13 @@ class BoTSORT_node(BoTSORT_wrapper):
         self.bridge = CvBridge()
 
         if self.out_visualization_topic:
-            self.visualization_pub = rospy.Publisher(self.out_visualization_topic, Image, queue_size=10)
+            self.visualization_pub = rospy.Publisher(self.out_visualization_topic, CompressedImage, queue_size=10)
         else:
             self.visualization_pub = None
 
     def start(self):
         self.segmentation_sub = message_filters.Subscriber(self.segmentation_topic, Objects)
-        self.image_sub = message_filters.Subscriber(self.image_topic, Image)
+        self.image_sub = message_filters.Subscriber(self.image_topic, CompressedImage)  # Используем CompressedImage
         self.sync_sub = message_filters.TimeSynchronizer(
             [self.segmentation_sub, self.image_sub], 10)
         self.sync_sub.registerCallback(self.callback)
@@ -44,18 +45,14 @@ class BoTSORT_node(BoTSORT_wrapper):
             from_objects_msg(segmentation_objects_msg)
 
         new_tracking_ids = set(tracking_ids)
-        # Find new tracking IDs
         new_ids = new_tracking_ids - self.tracking_ids_set
         self.tracking_ids_set = new_tracking_ids
 
-        # Call the service for new tracking IDs
         for new_id in new_ids:
             self.call_point_cloud_service(new_id)
 
-        if image_msg._type == "sensor_msgs/Image":
-            image = self.bridge.imgmsg_to_cv2(image_msg, desired_encoding='bgr8')
-        elif image_msg._type == "sensor_msgs/CompressedImage":
-            image = self.bridge.compressed_imgmsg_to_cv2(image_msg, desired_encoding='bgr8')
+        # Обработка CompressedImage
+        image = self.bridge.compressed_imgmsg_to_cv2(image_msg, desired_encoding='bgr8')
 
         tracked_objects = self.track(boxes, scores, classes_ids, image)
         tracked_objects_msg = to_objects_msg(segmentation_objects_msg.header, *tracked_objects)
@@ -66,7 +63,7 @@ class BoTSORT_node(BoTSORT_wrapper):
             vis = image.copy()
             masks = get_full_masks(masks_in_rois, rois, widths, heights)
             draw_objects(vis, scores, tracking_ids, masks=masks)
-            vis_msg = self.bridge.cv2_to_imgmsg(vis, encoding='bgr8')
+            vis_msg = self.bridge.cv2_to_compressed_imgmsg(vis, dst_format='jpeg')  # Используем cv2_to_compressed_imgmsg
             vis_msg.header = segmentation_objects_msg.header
             self.visualization_pub.publish(vis_msg)
 
@@ -83,7 +80,7 @@ class BoTSORT_node(BoTSORT_wrapper):
 if __name__ == "__main__":
     rospy.init_node("tracking_node")
     segmentation_topic = "/segmentation"
-    image_topic = os.getenv("IMAGE_TOPIC", "/camera/image_raw")
+    image_topic = os.getenv("IMAGE_TOPIC")
     out_tracking_topic = "/tracking"
     out_visualization_topic = "/tracking_vis" if rospy.get_param("~enable_visualization", False) else None
 
@@ -92,3 +89,4 @@ if __name__ == "__main__":
 
     rospy.loginfo("Tracking node spinning...")
     rospy.spin()
+

@@ -100,7 +100,7 @@ if __name__ == '__main__':
     else:
         out_visualization_topic = None
     segmentation_node = VILD_CLIP_node(args.categories,
-        "/realsense_gripper/color/image_raw/compressed",
+        "IMAGE_TOPIC",
         "/segmentation", out_visualization_topic=out_visualization_topic,
         min_score=0.5)
     segmentation_node.start()

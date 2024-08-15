@@ -103,7 +103,7 @@ class OpenSeeD_node(OpenSeeD_wrapper):
             queue_size=1, buff_size=2 ** 24)
 
         cats_topic_type, _, _ = rostopic.get_topic_class(self.labels_topic)
-        print("self.labels_topic, cats_topic_type", self.labels_topic, cats_topic_type)
+        #print("self.labels_topic, cats_topic_type", self.labels_topic, cats_topic_type)
         self.cats_sub = rospy.Subscriber(
             self.labels_topic, cats_topic_type, self.callback_cats,
             queue_size=1, buff_size=2 ** 24)

@@ -21,8 +21,10 @@ from threading import Lock
 
 def build_parser():
     parser = argparse.ArgumentParser()
+
+    parser.add_argument('--target-frame', type=str, default='camera')
     
-    parser.add_argument('--target-frame', type=str, default='realsense_gripper_link')
+    #parser.add_argument('--target-frame', type=str, default='realsense_gripper_link')
     #parser.add_argument('--target-frame', type=str, default='base_link')
     parser.add_argument('-vis', '--enable-visualization', action='store_true')
     return parser
@@ -39,7 +41,8 @@ class ObjectPoseEstimation_node:
             out_pose_visualization_topic=None,
             out_gt_pc_visualization_topic=None, out_pc_visualization_topic=None,
             #target_frame='base_link', object_frame="object", publish_to_tf=True):
-            target_frame='realsense_gripper_link', object_frame="object", publish_to_tf=True):
+            #target_frame='realsense_gripper_link', object_frame="object", publish_to_tf=True):
+            target_frame='camera', object_frame="object", publish_to_tf=True):
         self.object_point_cloud_topic = object_point_cloud_topic
         self.out_object_pose_topic = out_object_pose_topic
         self.out_pose_visualization_topic = out_pose_visualization_topic
@@ -166,25 +169,6 @@ class ObjectPoseEstimation_node:
                     marker = self.create_pose_marker(object_pose_msg.pose)###
                     self.pose_marker_pub.publish(marker)###
                     
-    def create_pose_marker(self, pose):
-        marker = Marker()
-        marker.header.frame_id = self.target_frame
-        marker.header.stamp = rospy.Time.now()
-        marker.ns = "object_pose_vis"
-        marker.id = 0
-        marker.type = Marker.ARROW
-        marker.action = Marker.ADD
-        marker.pose = pose
-        marker.scale.x = 0.5  # длина стрелки
-        marker.scale.y = 0.02  # ширина стрелки
-        marker.scale.z = 0.02 # высота стрелки
-        marker.color.a = 1.0  # прозрачность
-        marker.color.r = 1.0  # красный цвет
-        marker.color.g = 0.0
-        marker.color.b = 0.0
-        return marker
-           
-                
         if self.gt_pc_visualization_pub is not None and \
                 object_pose_estimator is not None:
             gt_pc = object_pose_estimator.gt_pc_down
@@ -217,8 +201,24 @@ class ObjectPoseEstimation_node:
             object_pose_tf.transform.rotation = object_pose_msg.pose.orientation
             self.tf_broadcaster.sendTransform(object_pose_tf)
             
-            
-            
+    def create_pose_marker(self, pose):
+        marker = Marker()
+        marker.header.frame_id = self.target_frame
+        marker.header.stamp = rospy.Time.now()
+        marker.ns = "object_pose_vis"
+        marker.id = 0
+        marker.type = Marker.ARROW
+        marker.action = Marker.ADD
+        marker.pose = pose
+        marker.scale.x = 0.5  # длина стрелки
+        marker.scale.y = 0.02  # ширина стрелки
+        marker.scale.z = 0.02 # высота стрелки
+        marker.color.a = 1.0  # прозрачность
+        marker.color.r = 1.0  # красный цвет
+        marker.color.g = 0.0
+        marker.color.b = 0.0
+        return marker       
+                
 
     def estimate_pose_ros(self, object_point_cloud_msg: ObjectPointCloud,
             prev: PreviousResults):

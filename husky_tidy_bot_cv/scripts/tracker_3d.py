@@ -262,16 +262,16 @@ class Tracker3D:
                 if new_object.tracking_2d_id == tracked_object.tracking_2d_id and \
                         new_object.tracking_2d_id != -1:
                     dists[i, j] = 0
-        #print(f'Tracking 2D ID fusion applied: {dists}')
+        print(f'Tracking 2D ID fusion applied: {dists}')
 
     def _match(self, dists):
         if dists.size == 0:
             new_to_tracked = np.full((dists.shape[0],), -1, dtype=int)
             tracked_to_new = np.full((dists.shape[1],), -1, dtype=int)
-            #print('Empty distance matrix, no matches.')
+            print('Empty distance matrix, no matches.')
             return new_to_tracked, tracked_to_new
 
         max_range = 0.25
         new_to_tracked, tracked_to_new = lap.lapjv(dists, cost_limit=(max_range * max_range), extend_cost=True, return_cost=False)
-        #print(f'Matching result: {new_to_tracked}, {tracked_to_new}')
+        print(f'Matching result: {new_to_tracked}, {tracked_to_new}')
         return new_to_tracked, tracked_to_new

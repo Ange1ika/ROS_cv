@@ -86,6 +86,7 @@ class Tracker3D_node(Tracker3D):
             out_tracked_objects_3d_topic, erosion_size,
             out_visualization_topic=None):
         print("Waiting for depth info message...")
+        print("Init tracker_3d")
         depth_info_msg = rospy.wait_for_message(depth_info_topic, CameraInfo)
         K = np.array(depth_info_msg.K).reshape(3, 3)
         D = np.array(depth_info_msg.D)
@@ -96,7 +97,8 @@ class Tracker3D_node(Tracker3D):
         self.out_tracked_objects_3d_topic = out_tracked_objects_3d_topic
         self.out_visualization_topic = out_visualization_topic
 
-        self.map_frame = 'realsense_gripper_link'
+        #self.map_frame = 'realsense_gripper_link'
+        self.map_frame = 'camera'
         #self.map_frame = "base_link"
 
         self.tracked_objects_3d_pub = \
@@ -133,6 +135,7 @@ class Tracker3D_node(Tracker3D):
         self.output_delays = list()
 
     def start(self):
+        print("start_tracker")
         self.objects_sub = message_filters.Subscriber(self.objects_topic, Objects)
         self.depth_sub = message_filters.Subscriber(self.depth_topic, Image)
         self.sync_sub = message_filters.TimeSynchronizer(
@@ -150,6 +153,7 @@ class Tracker3D_node(Tracker3D):
             return resp
 
     def callback(self, objects_msg, depth_msg):
+        print("callback_tracker_3d")
         with self.total_tm:
             input_delay = rospy.get_rostime() - objects_msg.header.stamp
             self.input_stamps.append(objects_msg.header.stamp)
@@ -293,8 +297,9 @@ def complete_args(args):
         args.objects_topics = ["/tracking"]
 
     if args.realsense:
-        args.depth_info_topics = ["/realsense_gripper/aligned_depth_to_color/camera_info"]
-        args.depth_topics = ["/realsense_gripper/aligned_depth_to_color/image_raw"]
+        print("Check realsense tracker3d")
+        args.depth_info_topics = ["INFO_TOPIC"]
+        args.depth_topics = ["DEPTH_TOPIC"]
     if args.zed:
         args.depth_info_topics = ["/zed_node/depth/camera_info"]
         args.depth_topics = ["/zed_node/depth/depth_registered"]

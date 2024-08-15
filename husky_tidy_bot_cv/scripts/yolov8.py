@@ -35,8 +35,11 @@ class YOLOv8_wrapper(YOLO):
         height, width = image.shape[:2]
         print(f"Image dimensions: {height}x{width}")
 
-        # Run inference
-        results = self(image, save=False, show=False, verbose=False, conf=self.min_score, imgsz=640)
+        # Определяем метод predict для удобства
+        predict = self.__call__
+
+        # Run inference using predict instead of self
+        results = predict(image, save=False, show=False, verbose=False, conf=self.min_score, imgsz=640)
         print(f"Inference results: {results}")
 
         # Check if results are empty
@@ -59,7 +62,6 @@ def preprocess_results(results, orig_shape):
     assert len(results) == 1  # only single image supported
     result = results[0]
     print("Processing results...")
-    #print(f"Boxes tensor shape: {result.shape}")
     print(f"Boxes tensor shape: {result.boxes.boxes.shape}")
 
     if result.masks is None:
@@ -76,9 +78,6 @@ def preprocess_results(results, orig_shape):
     boxes = result.boxes.boxes.cpu().numpy()
     masks = result.masks.masks.cpu().numpy()
     
-    
-
-    
     assert len(masks) == len(boxes)
 
     scores = boxes[:, 4].astype(float)
@@ -92,10 +91,11 @@ def preprocess_results(results, orig_shape):
     scaled_masks = scale_image((mask_height, mask_width), masks, (height, width))
     scaled_masks = scaled_masks.transpose(2, 0, 1)
 
-    # boxes - (xyxy) not including last
     return scores, classes_ids, boxes, scaled_masks
     
     
+
+
 def scale_image(im1_shape, masks, im0_shape, ratio_pad=None):
     """
     Takes a mask, and resizes it to the original image size

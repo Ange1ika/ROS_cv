@@ -25,8 +25,8 @@ class ArucoNode:
         self.camera_model = PinholeCameraModel()
 
         # Подписка на топики
-        self.image_sub = rospy.Subscriber('/realsense_gripper/color/image_raw/compressed', CompressedImage, self.image_callback)
-        self.info_sub = rospy.Subscriber('/realsense_gripper/color/camera_info', CameraInfo, self.info_callback)
+        self.image_sub = rospy.Subscriber('IMAGE_TOPIC', CompressedImage, self.image_callback)
+        self.info_sub = rospy.Subscriber('INFO_TOPIC', CameraInfo, self.info_callback)
 
         # Публикация результата
         self.image_pub = rospy.Publisher('/aruco_image', Image, queue_size=1)

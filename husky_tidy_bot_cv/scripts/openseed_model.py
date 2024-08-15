@@ -230,7 +230,6 @@ class OpenSeeD_wrapper:
             pred_mask = pred_mask[y1:y2,x1:x2]
             mask = np.stack([pred_mask for i in range(3)], axis=2)
             image = (image * mask).clip(0, 255).astype(np.uint8)
-
             image = self.preprocess(Image.fromarray(image)).unsqueeze(0).cuda()
             with torch.no_grad(), torch.cuda.amp.autocast():
                 image_features = self.model_clip.encode_image(image)
