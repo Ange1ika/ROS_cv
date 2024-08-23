@@ -5,7 +5,7 @@ source /sources/catkin_ws/devel/setup.bash
 
 # Bag 1
 #export FIXED_FRAME=base_link
-export FIXED_FRAME=camera # ros2
+export FIXED_FRAME=camera2_color_optical_frame # ros2
 #export FIXED_FRAME=realsense_gripper_link
 export TARGET_BAG=сoutput.bag
 #export RVIZ_CONF=/resources/data/testbag_full.rviz  
@@ -45,6 +45,9 @@ sleep 1
 #sleep 1
 
 
+echo "Run object_point_cloud_extraction_node.py"
+python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/object_point_cloud_extraction_node.py -vis &
+sleep 1
 
 
 echo "Run bot_sort_node.py"
@@ -52,9 +55,9 @@ python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/bot_sort_node.py -vis &
 sleep 1
 
 
-#echo "Run tracker_3d_node.py"
-#python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/tracker_3d_node.py -vis &
-#sleep 1
+echo "Run tracker_3d_node.py"
+python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/tracker_3d_node.py -vis &
+sleep 1
 
 echo "Run object_pose_estimation_node.py" 
 python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/object_pose_estimation_node.py -vis &

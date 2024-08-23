@@ -24,7 +24,7 @@ class TrackedObject:
         self.visible_without_updates = 0
         if point_cloud is not None:
             self.calculate_dimensions() 
-        print("Init")
+        print(f"Initialized TrackedObject: class_id={class_id}, tracking_2d_id={tracking_2d_id}, frame_id={frame_id}")
     
     def calculate_dimensions(self):
         if self.point_cloud is not None:
@@ -33,10 +33,12 @@ class TrackedObject:
             max_coords = np.max(self.point_cloud, axis=0)
             # Calculate the dimensions as the difference between max and min coordinates
             self.dimensions = max_coords - min_coords
+            print(f"Calculated dimensions for TrackedObject {self.tracking_id}: {self.dimensions}")
 
     def activate(self):
         assert self.tracking_id == -1
         self.tracking_id = self.next_tracking_id
+        print(f"Activated TrackedObject {self.tracking_id}")
 
     def update(self, update_object):
         assert self.tracking_id != -1
@@ -61,6 +63,7 @@ class TrackedObject:
         pose_in_camera = np.matmul(camera_pose_inv, np.append(self.pose, 1))[:3]
         pose_z = pose_in_camera[2]
         if pose_z <= 0:
+            print(f"TrackedObject {self.tracking_id} is not visible: pose_z <= 0")
             return False
 
         pose_in_camera = np.expand_dims(pose_in_camera, axis=(0, 1))
@@ -70,6 +73,7 @@ class TrackedObject:
         v = point[1]
         height, width = depth.shape
         if u < margin or v < margin or u >= width - margin or v >= height - margin:
+            print(f"TrackedObject {self.tracking_id} is not visible: out of bounds")
             return False
 
         min_u = max(u - radius, 0)
@@ -91,7 +95,7 @@ class TrackedObject:
         thresh = 0.5
         visibility = rate > thresh
         
-        #print(f'Visibility check for object {self.tracking_id}: {visibility}')
+        print(f'Visibility check for object {self.tracking_id}: {visibility}, rate: {rate}')
         return visibility
 
 class Tracker3D:
@@ -141,9 +145,11 @@ class Tracker3D:
         filename = f"{directory}/frame_{self.frame_id}.json"
         with open(filename, 'w') as f:
             json.dump(data, f, indent=4)
+        print(f'Saved frame {self.frame_id} to {filename}')
     
     def update(self, camera_pose, depth, classes_ids, tracking_ids, masks_in_rois, rois):
         self.frame_id += 1
+        print(f'Updating Tracker3D for frame {self.frame_id}')
 
         objects_poses, point_clouds = self._get_objects_poses(depth, masks_in_rois, rois, camera_pose)
         valid = ~np.isnan(objects_poses[:, 0])
@@ -208,6 +214,7 @@ class Tracker3D:
             else:
                 transformed_point_clouds.append(None)
         
+        print(f'Computed objects poses and transformed point clouds for frame {self.frame_id}')
         return objects_poses, transformed_point_clouds
 
     def _get_objects_poses_in_camera(self, depth, masks_in_rois, rois):
@@ -251,6 +258,7 @@ class Tracker3D:
         else:
             object_poses = np.empty((0, 3))
 
+        print(f'Extracted object poses in camera for {len(object_poses)} objects')
         return object_poses, point_clouds
 
 

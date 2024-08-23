@@ -19,7 +19,7 @@ from object_point_cloud_extraction import ObjectPointCloudExtraction
 
 def build_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--target-frame', type=str, default='camera2_color_optical_frame')  # for rosbag2
+    parser.add_argument('--target-frame', type=str, default='camera_color_optical_frame')  # for rosbag2
     parser.add_argument('-vis', '--enable-visualization', action='store_true')
     return parser
 
@@ -27,7 +27,7 @@ def build_parser():
 class ObjectPointCloudExtraction_node(ObjectPointCloudExtraction):
     def __init__(self, depth_info_topic, depth_topic, objects_topic,
                  out_object_point_cloud_topic, out_visualization_topic=None,
-                 target_frame='camera2_color_optical_frame', erosion_size=0, pool_size=2):
+                 target_frame='camera_color_optical_frame', erosion_size=0, pool_size=2):
         print("Waiting for depth info message...")
         depth_info_msg = rospy.wait_for_message(depth_info_topic, CameraInfo)
         K = np.array(depth_info_msg.K).reshape(3, 3)

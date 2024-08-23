@@ -98,7 +98,7 @@ class Tracker3D_node(Tracker3D):
         self.out_visualization_topic = out_visualization_topic
 
         #self.map_frame = 'realsense_gripper_link'
-        self.map_frame = 'camera'
+        self.map_frame = 'camera2_color_optical_frame'
         #self.map_frame = "base_link"
 
         self.tracked_objects_3d_pub = \
