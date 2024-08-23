@@ -47,14 +47,14 @@ sleep 1
 
 
 
-#echo "Run bot_sort_node.py"
-#python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/#bot_sort_node.py -vis &
-#sleep 1
-
-
-echo "Run tracker_3d_node.py"
-python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/tracker_3d_node.py -vis &
+echo "Run bot_sort_node.py"
+python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/bot_sort_node.py -vis &
 sleep 1
+
+
+#echo "Run tracker_3d_node.py"
+#python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/tracker_3d_node.py -vis &
+#sleep 1
 
 echo "Run object_pose_estimation_node.py" 
 python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/object_pose_estimation_node.py -vis &
