@@ -191,12 +191,24 @@ class Tracker3D:
         self.save_to_json("/resources/data/point_clouds")
 
     def _get_objects_poses(self, depth, masks_in_rois, rois, camera_pose):
-        objects_poses_in_camera, point_clouds = self._get_objects_poses_in_camera(
+        objects_poses_in_camera, point_clouds_in_camera = self._get_objects_poses_in_camera(
             depth, masks_in_rois, rois)
         R = camera_pose[:3, :3]
         t = camera_pose[:3, 3]
+        
+        # Применение преобразования к позам объектов
         objects_poses = np.matmul(R, objects_poses_in_camera.T).T + t
-        return objects_poses, point_clouds
+        
+        # Применение преобразования к облакам точек
+        transformed_point_clouds = []
+        for point_cloud in point_clouds_in_camera:
+            if point_cloud is not None:
+                transformed_point_cloud = np.matmul(R, point_cloud.T).T + t
+                transformed_point_clouds.append(transformed_point_cloud)
+            else:
+                transformed_point_clouds.append(None)
+        
+        return objects_poses, transformed_point_clouds
 
     def _get_objects_poses_in_camera(self, depth, masks_in_rois, rois):
         fx = self.K[0, 0]
@@ -205,7 +217,8 @@ class Tracker3D:
         cy = self.K[1, 2]
         depth_scale = get_depth_scale(depth)
         object_poses = list()
-        point_clouds = list()  # Для хранения point_clouds
+        point_clouds = list()
+        
         for mask_in_roi, roi in zip(masks_in_rois, rois):
             if self.erosion_size > 0:
                 mask_in_roi = cv2.erode(mask_in_roi, self.erosion_element,
@@ -215,7 +228,7 @@ class Tracker3D:
             if np.count_nonzero(valid) < 15:
                 object_pose = np.array([np.nan] * 3)
                 object_poses.append(object_pose)
-                point_clouds.append(None)  # Добавляем None, если нет данных
+                point_clouds.append(None)
                 continue
 
             v, u = np.where(mask_in_roi)
@@ -231,7 +244,7 @@ class Tracker3D:
             point_cloud = np.vstack((x, y, z)).T
             object_pose = np.array([x.mean(), y.mean(), z.mean()])
             object_poses.append(object_pose)
-            point_clouds.append(point_cloud)  # Сохраняем point_cloud
+            point_clouds.append(point_cloud)
 
         if len(object_poses) > 0:
             object_poses = np.array(object_poses)
@@ -239,6 +252,8 @@ class Tracker3D:
             object_poses = np.empty((0, 3))
 
         return object_poses, point_clouds
+
+
 
     def _compute_distances_matrix(self, new_objects: List[TrackedObject]):
         dists = np.empty((len(new_objects), len(self.tracked_objects)), dtype=float)

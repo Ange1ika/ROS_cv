@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib_msgs
 )
 
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -61,7 +62,6 @@ add_message_files(
   ObjectPointCloud.msg
   Categories.msg
   ObjectPose.msg
-  ObjectPose_new.msg
   Marker.msg
 )
 

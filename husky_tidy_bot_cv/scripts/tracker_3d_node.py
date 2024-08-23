@@ -298,8 +298,8 @@ def complete_args(args):
 
     if args.realsense:
         print("Check realsense tracker3d")
-        args.depth_info_topics = ["INFO_TOPIC"]
-        args.depth_topics = ["DEPTH_TOPIC"]
+        args.depth_info_topics = ["/camera2/camera2/depth/camera_info"]
+        args.depth_topics = ["/camera2/camera2/depth/image_rect_raw"]
     if args.zed:
         args.depth_info_topics = ["/zed_node/depth/camera_info"]
         args.depth_topics = ["/zed_node/depth/depth_registered"]

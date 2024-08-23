@@ -125,8 +125,11 @@ if __name__ == '__main__':
     else:
         erosion_element = None
 
+    #depth_sub = message_filters.Subscriber(
+    #    "/realsense_gripper/aligned_depth_to_color/image_raw", Image)
+
     depth_sub = message_filters.Subscriber(
-        "/realsense_gripper/aligned_depth_to_color/image_raw", Image)
+        "/camera2/camera2/depth/image_rect_raw", Image)
     objects_sub = message_filters.Subscriber("/segmentation", Objects)
     sync_sub = message_filters.TimeSynchronizer([depth_sub, objects_sub], queue_size=50)
     sync_sub.registerCallback(callback)

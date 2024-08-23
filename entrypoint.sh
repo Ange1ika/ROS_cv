@@ -9,11 +9,13 @@ export FIXED_FRAME=camera # ros2
 #export FIXED_FRAME=realsense_gripper_link
 export TARGET_BAG=сoutput.bag
 #export RVIZ_CONF=/resources/data/testbag_full.rviz  
-
+export DEPTH_CAMERA_INFO=/camera2/camera2/depth/camera_info
 export RVIZ_CONF=/resources/data/rviz_full_conf_2.rviz
 #export DEPTH_TOPIC=/realsense_gripper/aligned_depth_to_color/image_raw  
 
-export DEPTH_TOPIC=/camera2/camera2/color/image_raw/compressedDepth  #топик на ros2
+export DEPTH_TOPIC=/camera2/camera2/depth/image_rect_raw
+
+# /camera2/camera2/color/image_raw/compressedDepth  #топик на ros2
 #export DEPTH_TOPIC=/realsense_gripper/aligned_depth_to_color/image_raw
 export IMAGE_TOPIC=/camera2/camera2/color/image_raw/compressed  #топик на ros2
 export INFO_TOPIC=/camera2/camera2/depth/camera_info
@@ -36,18 +38,19 @@ sleep 1
 #python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/aruco_detection_service.py &
 #sleep 1
 
-echo "Run object_point_cloud_extraction_node.py"
-python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/object_point_cloud_extraction_node.py -vis &
-sleep 1
 
 
 #echo "Run point_cloud_listener.py"
 #python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/point_cloud_listener.py &
 #sleep 1
 
-echo "Run bot_sort_node.py"
-python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/bot_sort_node.py -vis &
-sleep 1
+
+
+
+#echo "Run bot_sort_node.py"
+#python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/#bot_sort_node.py -vis &
+#sleep 1
+
 
 echo "Run tracker_3d_node.py"
 python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/tracker_3d_node.py -vis &

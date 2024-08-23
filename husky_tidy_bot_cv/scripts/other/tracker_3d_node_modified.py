@@ -308,8 +308,10 @@ def complete_args(args):
         args.objects_topics = ["/tracking"]
 
     if args.realsense:
-        args.depth_info_topics = ["/realsense_gripper/aligned_depth_to_color/camera_info"]
-        args.depth_topics = ["/realsense_gripper/aligned_depth_to_color/image_raw"]
+        #args.depth_info_topics = ["/realsense_gripper/aligned_depth_to_color/camera_info"]
+        #args.depth_topics = ["/realsense_gripper/aligned_depth_to_color/image_raw"]
+        args.depth_info_topics = ["/camera2/camera2/depth/camera_info"]
+        args.depth_topics = ["/camera2/camera2/depth/image_rect_raw"]
     if args.zed:
         args.depth_info_topics = ["/zed_node/depth/camera_info"]
         args.depth_topics = ["/zed_node/depth/depth_registered"]

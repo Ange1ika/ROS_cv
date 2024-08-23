@@ -19,19 +19,15 @@ from object_point_cloud_extraction import ObjectPointCloudExtraction
 
 def build_parser():
     parser = argparse.ArgumentParser()
-    #parser.add_argument('--target-frame', type=str, default='base_link')
-    #parser.add_argument('--target-frame', type=str, default='realsense_gripper_link')
-    parser.add_argument('--target-frame', type=str, default='camera') # for rosbag2
+    parser.add_argument('--target-frame', type=str, default='camera2_color_optical_frame')  # for rosbag2
     parser.add_argument('-vis', '--enable-visualization', action='store_true')
     return parser
 
 
 class ObjectPointCloudExtraction_node(ObjectPointCloudExtraction):
     def __init__(self, depth_info_topic, depth_topic, objects_topic,
-            out_object_point_cloud_topic, out_visualization_topic=None,
-            #target_frame='base_link', erosion_size=0, pool_size=2):
-            #target_frame = 'realsense_gripper_link', erosion_size=0, pool_size=2):
-            target_frame = 'camera', erosion_size=0, pool_size=2):
+                 out_object_point_cloud_topic, out_visualization_topic=None,
+                 target_frame='camera2_color_optical_frame', erosion_size=0, pool_size=2):
         print("Waiting for depth info message...")
         depth_info_msg = rospy.wait_for_message(depth_info_topic, CameraInfo)
         K = np.array(depth_info_msg.K).reshape(3, 3)
@@ -76,17 +72,21 @@ class ObjectPointCloudExtraction_node(ObjectPointCloudExtraction):
         self.total_tm = TimeMeasurer("total")
 
     def start(self):
+        rospy.loginfo("Subscribing to topics...")
         self.depth_sub = message_filters.Subscriber(self.depth_topic, Image)
         self.objects_sub = message_filters.Subscriber(self.objects_topic, Objects)
         self.sync_sub = message_filters.TimeSynchronizer(
             [self.depth_sub, self.objects_sub], 10)
         self.sync_sub.registerCallback(self.callback)
 
+        rospy.loginfo("Setting up services...")
         self.set_object_id_srv = rospy.Service(
             "~set_object_id", SetObjectId, self.set_object_id)
 
         self.get_object_point_cloud_srv = rospy.Service(
             "~get_object_point_cloud", GetObjectPointCloud, self.get_object_point_cloud)
+
+        rospy.loginfo("ObjectPointCloudExtraction_node started and ready.")
 
     def set_object_id(self, req: SetObjectIdRequest):
         with self.mutex:
@@ -94,12 +94,13 @@ class ObjectPointCloudExtraction_node(ObjectPointCloudExtraction):
 
             resp = SetObjectIdResponse()
             resp.process_after_stamp = self.last_stamp
+            rospy.loginfo(f"Object ID set to {req.object_id}")
             return resp
 
     def get_object_point_cloud(self, req: GetObjectPointCloudRequest):
         with self.mutex:
             rospy.loginfo(f"Received request for point cloud extraction "
-                f"for object id {req.object_id}")
+                         f"for object id {req.object_id}")
 
             rate = rospy.Rate(self.check_rate)
             start_time = rospy.get_rostime()
@@ -110,24 +111,24 @@ class ObjectPointCloudExtraction_node(ObjectPointCloudExtraction):
                     timeout_exceeded = True
                     object_point_cloud_msg = None
                     self.reason = f"Timeout of {self.check_timeout.to_sec()} seconds " \
-                        "is exceeded while waiting for depth and objects messages"
+                                  "is exceeded while waiting for depth and objects messages"
+                    rospy.logwarn(self.reason)
                 rate.sleep()
                 self.mutex.acquire()
 
             if not timeout_exceeded:
-                # strange exception sometimes occurs in extract_point_cloud_ros(),
-                # but when this function is called from callback(), all works fine
                 retry = True
                 tries_counter = 0
                 while retry:
                     try:
                         object_point_cloud_msg = self.extract_point_cloud_ros(
                             self.last_depth_msg, self.last_objects_msg, req.object_id)
-                    except RuntimeError:
+                    except RuntimeError as e:
                         tries_counter += 1
                         if tries_counter >= self.max_tries_num:
                             object_point_cloud_msg = None
-                            self.reason = "Strange bug"
+                            self.reason = f"Strange bug: {e}"
+                            rospy.logerr(self.reason)
                             break
                     else:
                         retry = False
@@ -140,28 +141,33 @@ class ObjectPointCloudExtraction_node(ObjectPointCloudExtraction):
                 resp.return_code = 0
                 resp.object_point_cloud = object_point_cloud_msg
                 rospy.loginfo(f"Successfully returned point cloud "
-                    f"for object id {req.object_id}")
+                             f"for object id {req.object_id}")
             else:
                 resp.return_code = 1
-                rospy.loginfo(f"Error occured while trying to extract point cloud "
-                    f"for object id {req.object_id}: {self.reason}")
+                rospy.logerr(f"Error occurred while trying to extract point cloud "
+                            f"for object id {req.object_id}: {self.reason}")
             return resp
 
     def callback(self, depth_msg, objects_msg):
+        rospy.loginfo("Callback triggered.")
         with self.mutex:
             self.last_depth_msg = depth_msg
             self.last_objects_msg = objects_msg
 
             if self.object_id < 0:
+                rospy.loginfo("Object ID is not set. Skipping point cloud extraction.")
                 return
 
+            rospy.loginfo(f"Extracting point cloud for object ID {self.object_id}")
             object_point_cloud_msg = self.extract_point_cloud_ros(
                 depth_msg, objects_msg, self.object_id)
             self.last_stamp = depth_msg.header.stamp
 
         if object_point_cloud_msg is not None:
+            rospy.loginfo("Publishing object point cloud.")
             self.object_point_cloud_pub.publish(object_point_cloud_msg)
             if self.visualization_pub is not None:
+                rospy.loginfo("Publishing visualization point cloud.")
                 self.visualization_pub.publish(object_point_cloud_msg.point_cloud)
 
     def extract_point_cloud_ros(self, depth_msg, objects_msg, object_id):
@@ -179,7 +185,7 @@ class ObjectPointCloudExtraction_node(ObjectPointCloudExtraction):
 
         self.extract_tm.start()
         object_point_cloud, object_index = self.extract_point_cloud(depth,
-            classes_ids, tracking_ids, masks_in_rois, rois, object_id)
+                                                                    classes_ids, tracking_ids, masks_in_rois, rois, object_id)
         if object_point_cloud is None:
             return None
         self.extract_tm.stop()
@@ -190,6 +196,7 @@ class ObjectPointCloudExtraction_node(ObjectPointCloudExtraction):
                 timeout=rospy.Duration(0.1))
         except tf2_ros.ExtrapolationException:
             self.reason = "Lookup transform extrapolation error"
+            rospy.logwarn(self.reason)
             return None
         tf_mat = transform_to_numpy(tf.transform).astype(np.float32)
 
@@ -210,7 +217,7 @@ class ObjectPointCloudExtraction_node(ObjectPointCloudExtraction):
             else:
                 object_point_cloud_msg.tracking_id = -1
             object_point_cloud_msg.point_cloud = array_to_pointcloud2(object_point_cloud,
-                stamp=depth_msg.header.stamp, frame_id=self.target_frame)
+                                                                      stamp=depth_msg.header.stamp, frame_id=self.target_frame)
             object_point_cloud_msg.header = object_point_cloud_msg.point_cloud.header
 
         self.total_tm.stop()
@@ -233,8 +240,8 @@ if __name__ == '__main__':
     else:
         out_visualization_topic = None
     object_pose_estimation_node = ObjectPointCloudExtraction_node(
-        "INFO_TOPIC",
-        "DEPTH_TOPIC",
+        "/camera2/camera2/depth/camera_info",
+        "/camera2/camera2/depth/image_rect_raw",
         "/tracking", "/object_point_cloud",
         out_visualization_topic=out_visualization_topic,
         target_frame=args.target_frame,

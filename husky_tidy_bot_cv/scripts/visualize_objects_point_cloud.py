@@ -128,7 +128,7 @@ if __name__ == '__main__':
         erosion_element = None
 
     depth_sub = message_filters.Subscriber(
-        "DEPTH_TOPIC", Image)
+        "/camera2/camera2/depth/image_rect_raw", Image)
     objects_sub = message_filters.Subscriber("/segmentation", Objects)
     sync_sub = message_filters.TimeSynchronizer([depth_sub, objects_sub], queue_size=50)
     sync_sub.registerCallback(callback)
