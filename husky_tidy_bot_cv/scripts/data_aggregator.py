@@ -1,58 +1,63 @@
-#!/usr/bin/env python
 import rospy
-from std_msgs.msg import Header, Float64MultiArray, Int32MultiArray
-from geometry_msgs.msg import PoseArray
-from husky_tidy_bot_cv.msg import ObjectPose_new, Box
+from husky_tidy_bot_cv.msg import Objects, Detection, Box,  ObjectPose
+from geometry_msgs.msg import PoseArray, Pose, Point, Quaternion
 
-class DataAggregator:
-    def __init__(self):
-        self.classes_ids = []
-        self.scores = []
-        self.tracking_ids = []
-        self.boxes = []
-        self.poses = PoseArray()
+# Глобальная переменная для хранения последнего сообщения с позами
+latest_pose_msg = None
 
-        rospy.Subscriber('/openseed_node/scores', Float64MultiArray, self.scores_callback)
-        rospy.Subscriber('/openseed_node/classes_ids', Int32MultiArray, self.classes_ids_callback)
-        rospy.Subscriber('/openseed_node/tracking_ids', Int32MultiArray, self.tracking_ids_callback)
-        rospy.Subscriber('/openseed_node/boxes', Box, self.boxes_callback)
-        rospy.Subscriber('/object_pose_estimation_node/poses', PoseArray, self.poses_callback)
+def objects_callback(objects_msg):
+    global latest_pose_msg
 
-        self.publisher = rospy.Publisher('/object_pose_new', ObjectPose_new, queue_size=10)
+    detection_msg = Detection()
+    detection_msg.header = objects_msg.header
+    detection_msg.classes_ids = objects_msg.classes_ids
+    detection_msg.scores = objects_msg.scores
+    detection_msg.tracking_ids = objects_msg.tracking_ids  # Оставьте пустым, если пусто
 
-    def scores_callback(self, msg):
-        self.scores = msg.data
-        self.publish_data()
+    # Преобразование боксов
+    detection_msg.boxes = []
+    for obj_box in objects_msg.boxes:
+        box = Box()
+        box.x1 = obj_box.x1
+        box.y1 = obj_box.y1
+        box.x2 = obj_box.x2
+        box.y2 = obj_box.y2
+        detection_msg.boxes.append(box)
 
-    def classes_ids_callback(self, msg):
-        self.classes_ids = msg.data
-        self.publish_data()
+    # Преобразование поз из последнего полученного сообщения с позами
+    if latest_pose_msg is not None:
+        detection_msg.pose = PoseArray()
+        detection_msg.pose.header = latest_pose_msg.header
+        
+        for i in range(len(latest_pose_msg.positions)):
+            pose = Pose()
+            pose.position = latest_pose_msg.positions[i]
+            
+            # Дополнение ориентацией, если она есть в данных
+            if hasattr(latest_pose_msg, 'orientations') and len(latest_pose_msg.orientations) > i:
+                pose.orientation = latest_pose_msg.orientations[i]
+            else:
+                pose.orientation = Quaternion(0, 0, 0, 1)  # Единичная ориентация по умолчанию
+            
+            detection_msg.pose.poses.append(pose)
+    
+    detection_pub.publish(detection_msg)
 
-    def tracking_ids_callback(self, msg):
-        self.tracking_ids = msg.data
-        self.publish_data()
+def pose_callback(pose_msg):
+    global latest_pose_msg
+    latest_pose_msg = pose_msg
 
-    def boxes_callback(self, msg):
-        self.boxes = msg.boxes  # Изменено на msg.boxes, предполагая, что это массив Box
-        self.publish_data()
+if __name__ == "__main__":
+    rospy.init_node('objects_to_detection_with_pose')
 
-    def poses_callback(self, msg):
-        self.poses = msg
-        self.publish_data()
+    # Подписываемся на топик, где публикуются сообщения типа Objects
+    rospy.Subscriber('/segmentation_openseed', Objects, objects_callback)
 
-    def publish_data(self):
-        data = ObjectPose_new()
-        data.header.stamp = rospy.Time.now()
-        data.classes_ids = self.classes_ids
-        data.scores = self.scores
-        data.tracking_ids = self.tracking_ids
-        data.boxes = self.boxes
-        data.poses = self.poses
+    # Подписываемся на топик с позами
+    rospy.Subscriber('/object_pose', ObjectPose, pose_callback)
 
-        self.publisher.publish(data)
+    # Создаем паблишер для нового сообщения
+    detection_pub = rospy.Publisher('/detection_topic', Detection, queue_size=10)
 
-if __name__ == '__main__':
-    rospy.init_node('data_aggregator')
-    aggregator = DataAggregator()
     rospy.spin()
 

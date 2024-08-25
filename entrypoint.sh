@@ -66,7 +66,6 @@ python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/tracker_3d_node.py -vis 
 sleep 1
 
 
-
 #echo "Run aruco_node.py"
 #python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/aruco_node.py &
 #sleep 1
@@ -118,6 +117,13 @@ do
         sleep 1
     fi
 done
+
+
+
+echo "Run data_aggregator.py"
+python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/data_aggregator.py &
+sleep 1
+
 
 #rosbag play $TARGET_BAG -r 0.5 -s 5 --pause
 # rosbag play $TARGET_BAG -r 0.5 -s 5 -u 5

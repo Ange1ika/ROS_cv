@@ -113,6 +113,10 @@ RUN apt-get update && apt-get install -y git
 RUN git clone https://github.com/andrey1908/ultralytics.git /sources/catkin_ws/src/ultralytics
 #RUN git clone https://github.com/ultralytics/ultralytics.git /sources/catkin_ws/src/ultralytics
 
+### initialize the ros_bridge submodule
+RUN git submodule update --init
+
+
 # Install the ultralytics package
 RUN pip install -e /sources/catkin_ws/src/ultralytics
 

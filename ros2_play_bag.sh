@@ -8,9 +8,8 @@ ros2 run rviz2 rviz2 &
 sleep 1
 
 
-#for node in $(ros2 node list); do
-  #ros2 param set $node <parameter_name> <value>
-#done
-
 ros2 bag play /resources/data/rosbag2_2024_08_13-19_13_31_0.db3
 
+for node in $(ros2 node list); do
+  ros2 param set $node use_sim_time true
+done
