@@ -17,6 +17,10 @@ rosservice call /object_pose_estimation/get_object_pose
 realsense_gripper_link
 
 
+roscd log && tail -f latest/rosout.log
+
+
+
 camera == base_link
 
 rosservice call /detect_aruco_marker "{marker_id: 999}"
@@ -24,3 +28,66 @@ rosservice call /detect_aruco_marker "{marker_id: 999}"
 ros2 bag play rosbag2_2024_08_13-19_13_31_0.db3
 
 camera2_color_optical_frame
+
+camera_optical_frame
+
+
+        try:
+            tf = self.tf_buffer.lookup_transform(
+                self.target_frame, depth_msg.header.frame_id, depth_msg.header.stamp,
+                timeout=rospy.Duration(0.1))
+        except tf2_ros.ExtrapolationException:
+            self.reason = "Lookup transform extrapolation error"
+            rospy.logwarn(self.reason)
+            return None
+            
+            /camera2/camera2/depth/image_rect_raw
+            /camera2/camera2/depth/image_rect_raw
+            
+            Initialized Tracker3D
+depth_msg from extraction : [[428.97854614   0.         426.47512817]
+ [  0.         428.97854614 233.48342896]
+ [  0.           0.           1.        ]]
+start_tracker
+Subscribed to depth topic: /camera2/camera2/depth/image_rect_raw (type: Image)
+Subscribed to objects topic: /tracking (type: Objects)
+Subscribing to topics...
+Spinning...
+Setting up services...
+
+
+
+
+Depth subscriber topic: /camera2/camera2/depth/image_rect_raw
+Objects subscriber topic: /tracking
+Type of sync_sub: <class 'message_filters.ApproximateTimeSynchronizer'>
+Attributes of sync_sub: ['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'add', 'allow_headerless', 'callbacks', 'connectInput', 'enable_reset', 'input_connections', 'last_added', 'latest_stamps', 'lock', 'queue_size', 'queues', 'registerCallback', 'signalMessage', 'slop']
+Setting up services...
+
+
+
+Mask shape: (720, 523)
+  ROI shape: (slice(0, 720, None), slice(0, 523, None))
+step3
+step4
+Image resolution: 1280x720
+[ERROR] [1724622107.479047]: bad callback: <bound method Subscriber.callback of <message_filters.Subscriber object at 0x73e9578ebd30>>
+Traceback (most recent call last):
+  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/topics.py", line 750, in _invoke_callback
+    cb(msg)
+  File "/opt/ros/noetic/lib/python3/dist-packages/message_filters/__init__.py", line 76, in callback
+    self.signalMessage(msg)
+  File "/opt/ros/noetic/lib/python3/dist-packages/message_filters/__init__.py", line 58, in signalMessage
+    cb(*(msg + args))
+  File "/opt/ros/noetic/lib/python3/dist-packages/message_filters/__init__.py", line 330, in add
+    self.signalMessage(*msgs)
+  File "/opt/ros/noetic/lib/python3/dist-packages/message_filters/__init__.py", line 58, in signalMessage
+    cb(*(msg + args))
+  File "/sources/catkin_ws/src/husky_tidy_bot_cv/scripts/object_point_cloud_extraction_node.py", line 187, in callback
+    object_point_cloud_msg = self.extract_point_cloud_ros(
+  File "/sources/catkin_ws/src/husky_tidy_bot_cv/scripts/object_point_cloud_extraction_node.py", line 233, in extract_point_cloud_ros
+    tf = self.tf_buffer.lookup_transform(
+  File "/opt/ros/noetic/lib/python3/dist-packages/tf2_ros/buffer.py", line 90, in lookup_transform
+    return self.lookup_transform_core(target_frame, source_frame, time)
+tf2.LookupException: "camera2_depth_optical_frame" passed to lookupTransform argument source_frame does not exist. 
+

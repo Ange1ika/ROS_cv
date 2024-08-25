@@ -134,7 +134,7 @@ class OpenSeeD_node(OpenSeeD_wrapper):
                 height, width = image.shape[:2]
                 segmentation_objects_msg = to_objects_msg(
                     image_msg.header, scores, classes_ids, np.empty((0,)), boxes,
-                    masks_in_rois, rois, width, height)
+                    masks_in_ois, rois, width, height)
 
             self.segmentation_pub.publish(segmentation_objects_msg)
 
@@ -185,7 +185,7 @@ if __name__ == "__main__":
 #         "/home/administrator/zemskova_ts/husky_tidy_bot_cv_ws/src/openseed_src/model_final.pth",
 # #        "/home/wingrune/cv/OpenSeeD/configs/openseed/openseed_swint_lang_rosbag.yaml",
 # #        "/hdd/wingrune/openseed/output_finetune/model_0003599.pth",
-        "/camera2/camera2/color/image_raw/compressed", "/segmentation_openseed", labels_topic="/segmentation_labels",
+        "/realsense_gripper/color/image_raw/compressed", "/segmentation_openseed", labels_topic="/segmentation_labels",
         out_visualization_topic=out_visualization_topic, min_score_seen=0.5, min_score_unseen=0.1)
     segmentation_node.start()
 

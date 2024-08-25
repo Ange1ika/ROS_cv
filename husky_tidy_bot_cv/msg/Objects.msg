@@ -7,5 +7,4 @@ int32[] classes_ids
 int32[] tracking_ids  # can be empty
 Box[] boxes
 Mask[] masks
-int32[] marker_ids 
 

@@ -120,5 +120,5 @@ COPY entrypoint.sh /entrypoint.sh
 COPY entrypoint_rosbridge.sh /entrypoint_rosbridge.sh
 COPY ros2_play_bag.sh /ros2_play_bag.sh
 RUN chmod +x /entrypoint.sh /ros2_play_bag.sh /entrypoint_rosbridge.sh 
-CMD ["/bin/bash", "-c", "/entrypoint.sh & /ros2_play_bag.sh & /entrypoint_rosbridge.sh & wait"]
+CMD ["/bin/bash", "-c", "/ros2_play_bag.sh & /entrypoint_rosbridge.sh & /entrypoint.sh & wait"]
 #CMD ["/bin/bash", "/entrypoint.sh"]

@@ -11,13 +11,8 @@ from openseed_model import OpenSeeD_wrapper
 from kas_utils.time_measurer import TimeMeasurer
 from kas_utils.visualization import draw_objects
 from kas_utils.masks import get_masks_rois, get_masks_in_rois
-import cv2.aruco as aruco
-import logging
-
-
 
 from fixed_cats import FIXED_CATEGORIES
-import os
 
 ROOT_PATH = "/sources/catkin_ws/src/openseed_src/"
 sys.path.insert(0, ROOT_PATH)
@@ -105,6 +100,8 @@ class OpenSeeD_node(OpenSeeD_wrapper):
         self.image_sub = rospy.Subscriber(
             self.image_topic, image_topic_type, self.callback,
             queue_size=1, buff_size=2 ** 24)
+            
+        
 
         cats_topic_type, _, _ = rostopic.get_topic_class(self.labels_topic)
         print("self.labels_topic, cats_topic_type", self.labels_topic, cats_topic_type)
@@ -114,61 +111,41 @@ class OpenSeeD_node(OpenSeeD_wrapper):
 
     def callback(self, image_msg):
         with self.total_tm:
-            input_delay = rospy.get_rostime() - image_msg.header.stamp
-            self.input_stamps.append(image_msg.header.stamp)
-            self.input_delays.append(input_delay)
-
             with self.from_ros_tm:
                 if image_msg._type == "sensor_msgs/Image":
                     image = self.bridge.imgmsg_to_cv2(image_msg, desired_encoding='bgr8')
                 elif image_msg._type == "sensor_msgs/CompressedImage":
                     image = self.bridge.compressed_imgmsg_to_cv2(image_msg, desired_encoding='bgr8')
+                    height, width = image.shape[:2]
+                    print(f'Image resolution: {width}x{height}')
                 else:
-                    raise RuntimeError("Unknown message type")
-
-            # Обнаружение ArUco меток
-            corners, ids = detect_aruco_markers(image)
-            aruco_ids_list = []
-            aruco_corners_list = []
-
-            if ids is not None:
-                logger.info(f"Detected {ids} ArUco markers")
-                for i, marker_id in enumerate(ids):
-                    aruco_ids_list.append(int(marker_id[0]))  # Преобразование в int
-                    corners_flat = corners[i].flatten()
-                    aruco_corners_list.extend(corners_flat)
-                    # Визуализация меток на изображении
-                    cv2.polylines(image, [np.int32(corners[i])], True, (0, 255, 0), 2)
-                    cv2.putText(image, f"ID: {marker_id[0]}", tuple(corners[i][0][0]), 
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                    raise RuntimeError("Unkown message type")
 
             with self.segm_tm:
-                scores, classes_ids, boxes, masks = self.segment(image)
+                scores, classes_ids, boxes, masks = \
+                    self.segment(image, self.categories,
+                                 self.categories_with_features,
+                                 self.categories_with_features_ids,
+                                 reject_categories=['background'])
 
             with self.to_ros_tm:
                 rois = get_masks_rois(masks)
                 masks_in_rois = get_masks_in_rois(masks, rois)
                 height, width = image.shape[:2]
-                
-                # Заполнение расширенного сообщения Objects
                 segmentation_objects_msg = to_objects_msg(
                     image_msg.header, scores, classes_ids, np.empty((0,)), boxes,
                     masks_in_rois, rois, width, height)
-                segmentation_objects_msg.aruco_ids = aruco_ids_list
-            output_delay = rospy.get_rostime() - segmentation_objects_msg.header.stamp
-            self.output_stamps.append(segmentation_objects_msg.header.stamp)
-            self.output_delays.append(output_delay)
+
             self.segmentation_pub.publish(segmentation_objects_msg)
 
             if self.visualization_pub is not None:
                 with self.vis_tm:
                     vis = image.copy()
-                    draw_objects(vis, scores, classes_ids, masks=masks,
-                                draw_scores=True, draw_masks=True, palette=self.palette)
-                    vis_msg = self.bridge.cv2_to_imgmsg(vis, encoding='bgr8')
-                    vis_msg.header = image_msg.header
-                    self.visualization_pub.publish(vis_msg)
-
+                    draw_objects(vis, scores, classes_ids, boxes=boxes, masks=masks,
+                        draw_scores=True, draw_ids=True, draw_masks=True, draw_boxes=True, palette=self.palette, color_by_object_id=True)
+                vis_msg = self.bridge.cv2_to_imgmsg(vis, encoding='bgr8')
+                vis_msg.header = image_msg.header
+                self.visualization_pub.publish(vis_msg)
 
     def callback_cats(self, cats_msg):
         self.categories, self.categories_with_features, \
@@ -179,14 +156,6 @@ class OpenSeeD_node(OpenSeeD_wrapper):
             for (cat_id, cat_name) in zip(self.categories_with_features_ids, self.categories_with_features)
         }
         rospy.loginfo(f'Changed OpenSeeD categories to {labels_dict}')
-        
-    def detect_aruco_markers(image):
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_ARUCO_ORIGINAL)
-        parameters = aruco.DetectorParameters()
-        corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict,
-        parameters=parameters)
-        return corners, ids
 
 
 
@@ -209,7 +178,6 @@ if __name__ == "__main__":
     
     categories = [cat["name"] for cat in FIXED_CATEGORIES]
     
-    image_topic = os.getenv("IMAGE_TOPIC")
     segmentation_node = OpenSeeD_node(categories,
         ROOT_PATH + "configs/openseed_swint_lang_rosbag.yaml",
         "/resources/models/model_0003599.pth",
@@ -217,8 +185,7 @@ if __name__ == "__main__":
 #         "/home/administrator/zemskova_ts/husky_tidy_bot_cv_ws/src/openseed_src/model_final.pth",
 # #        "/home/wingrune/cv/OpenSeeD/configs/openseed/openseed_swint_lang_rosbag.yaml",
 # #        "/hdd/wingrune/openseed/output_finetune/model_0003599.pth",
-        image_topic,
-        "/segmentation_openseed", labels_topic="/segmentation_labels",
+        "/camera2/camera2/color/image_raw/compressed", "/segmentation_openseed", labels_topic="/segmentation_labels",
         out_visualization_topic=out_visualization_topic, min_score_seen=0.5, min_score_unseen=0.1)
     segmentation_node.start()
 

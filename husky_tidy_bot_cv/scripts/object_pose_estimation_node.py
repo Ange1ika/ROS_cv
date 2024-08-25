@@ -19,7 +19,8 @@ from threading import Lock
 
 def build_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--target-frame', type=str, default='camera_color_optical_frame')
+    parser.add_argument('--target-frame', type=str, default='camera')
+    #parser.add_argument('--target-frame', type=str, default='base_link')
     parser.add_argument('-vis', '--enable-visualization', action='store_true')
     return parser
 
@@ -34,7 +35,7 @@ class ObjectPoseEstimation_node:
     def __init__(self, object_point_cloud_topic, out_object_pose_topic,
             out_pose_visualization_topic=None,
             out_gt_pc_visualization_topic=None, out_pc_visualization_topic=None,
-            target_frame='camera_color_optical_frame', object_frame="object", publish_to_tf=True):
+            target_frame='camera', object_frame="object", publish_to_tf=True):
         self.object_point_cloud_topic = object_point_cloud_topic
         self.out_object_pose_topic = out_object_pose_topic
         self.out_pose_visualization_topic = out_pose_visualization_topic
@@ -269,8 +270,9 @@ if __name__ == '__main__':
         target_frame=args.target_frame)
     object_pose_estimation_node.start()
 
-    print("Spinning...")
+    #print("Spinning...")
     rospy.spin()
 
     print()
     del object_pose_estimation_node
+

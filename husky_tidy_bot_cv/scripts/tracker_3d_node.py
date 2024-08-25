@@ -97,8 +97,8 @@ class Tracker3D_node(Tracker3D):
         self.out_tracked_objects_3d_topic = out_tracked_objects_3d_topic
         self.out_visualization_topic = out_visualization_topic
 
-        #self.map_frame = 'realsense_gripper_link'
-        self.map_frame = 'camera2_color_optical_frame'
+        self.map_frame = 'realsense_gripper_link'
+        #self.map_frame = 'camera'
         #self.map_frame = "base_link"
 
         self.tracked_objects_3d_pub = \
@@ -153,6 +153,7 @@ class Tracker3D_node(Tracker3D):
             return resp
 
     def callback(self, objects_msg, depth_msg):
+        
         print("callback_tracker_3d")
         with self.total_tm:
             input_delay = rospy.get_rostime() - objects_msg.header.stamp
@@ -300,9 +301,13 @@ def complete_args(args):
         print("Check realsense tracker3d")
         args.depth_info_topics = ["/camera2/camera2/depth/camera_info"]
         args.depth_topics = ["/camera2/camera2/depth/image_rect_raw"]
+        #args.depth_info_topics = ["/camera2/camera2/depth/camera_info"]
+        #args.depth_topics = ["/camera2/camera2/depth/image_rect_raw"]
     if args.zed:
-        args.depth_info_topics = ["/zed_node/depth/camera_info"]
-        args.depth_topics = ["/zed_node/depth/depth_registered"]
+        args.depth_info_topics = ["/camera2/camera2/depth/camera_info"]
+        args.depth_topics = ["/camera2/camera2/depth/image_rect_raw"]
+        #args.depth_info_topics = ["/zed_node/depth/camera_info"]
+        #args.depth_topics = ["/zed_node/depth/depth_registered"]
 
     if args.out_tracked_objects_3d_topic is None:
         args.out_tracked_objects_3d_topic = "/tracked_objects_3d"
