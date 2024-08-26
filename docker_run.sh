@@ -10,7 +10,6 @@ docker run -it --name ros --rm -e DISPLAY=:1 \
    --mount type=bind,source=/home/cogmodel/ROS/resources/models,target=/resources/models \
    --mount type=bind,source=/home/cogmodel/ROS/resources/cache_clip,target=/root/.cache/clip \
    --mount type=bind,source=/home/cogmodel/ROS/resources/cache_torch,target=/root/.torch/iopath_cache/ \
+   --mount type=bind,source=/home/cogmodel/ROS/ros2_ws/,target=/sources/ros2_ws/src/my_ros2_package \
    noetic_full
-   
-   
-   
+
