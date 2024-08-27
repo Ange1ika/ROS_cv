@@ -97,7 +97,7 @@ class Tracker3D_node(Tracker3D):
         self.out_tracked_objects_3d_topic = out_tracked_objects_3d_topic
         self.out_visualization_topic = out_visualization_topic
 
-        self.map_frame = 'realsense_gripper_link'
+        self.map_frame = 'cam2_left_camera_frame'
         #self.map_frame = 'camera'
         #self.map_frame = "base_link"
 
@@ -299,13 +299,13 @@ def complete_args(args):
 
     if args.realsense:
         print("Check realsense tracker3d")
-        args.depth_info_topics = ["/camera2/camera2/depth/camera_info"]
-        args.depth_topics = ["/camera2/camera2/depth/image_rect_raw"]
+        args.depth_info_topics = ['DEPTH_INFO']
+        args.depth_topics = ['IMAGE_TOPIC']
         #args.depth_info_topics = ["/camera2/camera2/depth/camera_info"]
         #args.depth_topics = ["/camera2/camera2/depth/image_rect_raw"]
     if args.zed:
-        args.depth_info_topics = ["/camera2/camera2/depth/camera_info"]
-        args.depth_topics = ["/camera2/camera2/depth/image_rect_raw"]
+        args.depth_info_topics = ['DEPTH_TOPIC']
+        args.depth_topics = ['IMAGE_TOPIC']
         #args.depth_info_topics = ["/zed_node/depth/camera_info"]
         #args.depth_topics = ["/zed_node/depth/depth_registered"]
 

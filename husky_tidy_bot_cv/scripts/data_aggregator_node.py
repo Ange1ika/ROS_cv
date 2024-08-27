@@ -33,7 +33,7 @@ class DataAggregatorNode:
         self.publish_data()
 
     def boxes_callback(self, msg):
-        self.boxes = msg.boxes  # Изменено на msg.boxes, предполагая, что это массив Box
+        self.boxes = msg.boxes  
         self.publish_data()
 
     def poses_callback(self, msg):

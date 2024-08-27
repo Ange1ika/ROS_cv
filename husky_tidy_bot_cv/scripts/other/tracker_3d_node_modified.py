@@ -96,7 +96,7 @@ class Tracker3D_node(Tracker3D):
         self.out_tracked_objects_3d_topic = out_tracked_objects_3d_topic
         self.out_visualization_topic = out_visualization_topic
 
-        self.map_frame = 'realsense_gripper_link'
+        self.map_frame = 'cam2_left_camera_frame'
         #self.map_frame = "base_link"
 
         self.tracked_objects_3d_pub = \
@@ -310,11 +310,13 @@ def complete_args(args):
     if args.realsense:
         #args.depth_info_topics = ["/realsense_gripper/aligned_depth_to_color/camera_info"]
         #args.depth_topics = ["/realsense_gripper/aligned_depth_to_color/image_raw"]
-        args.depth_info_topics = ["/camera2/camera2/depth/camera_info"]
-        args.depth_topics = ["/camera2/camera2/depth/image_rect_raw"]
+        #args.depth_info_topics = ["/camera2/camera2/depth/camera_info"]
+        #args.depth_topics = ["/camera2/camera2/depth/image_rect_raw"]
+        args.depth_info_topics = ["DEPTH_INFO"]
+        args.depth_topics = ["DEPTH_TOPIC"]
     if args.zed:
-        args.depth_info_topics = ["/zed_node/depth/camera_info"]
-        args.depth_topics = ["/zed_node/depth/depth_registered"]
+        args.depth_info_topics = ["DEPTH_INFO"]
+        args.depth_topics = ["DEPTH_TOPIC"]
 
     if args.out_tracked_objects_3d_topic is None:
         args.out_tracked_objects_3d_topic = "/tracked_objects_3d"

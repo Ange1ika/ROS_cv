@@ -4,6 +4,7 @@ source /sources/catkin_ws/devel/setup.bash
 source /opt/ros/foxy/setup.bash
 
 
+
 rqt_bag
 
 rostopic echo /realsense_gripper/color/image_raw

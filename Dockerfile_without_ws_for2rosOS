@@ -7,13 +7,11 @@ RUN apt-get update && apt-get install -y lsb-core curl
 RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
 RUN curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -
 
-    
 RUN apt-get update && apt-get install -y \
     ros-noetic-desktop-full \
     ros-noetic-cv-bridge \
-    ros-noetic-image-transport \
-    ros-noetic-vision-opencv \
-    ros-noetic-compressed-image-transport \
+#    ros-noetic-image-transport \
+#    ros-noetic-vision-opencv \
     mesa-utils \
     libgl1-mesa-glx \
     python-dev \
@@ -81,28 +79,7 @@ RUN sh -c 'echo "deb http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main
     curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add - && \
     apt-get update && apt-get install -y \
     ros-foxy-desktop \
-    ros-foxy-ros1-bridge \
-    ros-foxy-image-transport-plugins  
-
-# Установка зависимостей для ROS2
-RUN apt-get update && \
-    apt-get install -y \
-    ros-noetic-rosbridge-suite \
-    ros-foxy-ros-base \
-    python3-colcon-common-extensions
-
-# Настройка ROS2
-WORKDIR /sources/ros2_ws
-# Собираем ROS2 workspace
-RUN /bin/bash -c "source /opt/ros/foxy/setup.bash && colcon build --symlink-install"
-
-# Source ROS1 и ROS2
-#RUN echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
-#RUN echo "source /opt/ros/foxy/setup.bash" >> ~/.bashrc
-#RUN echo "source /sources/catkin_ws/devel/setup.bash" >> ~/.bashrc
-#RUN echo "source /sources/ros2_ws/install/setup.bash" >> ~/.bashrc
-
-
+    ros-foxy-ros1-bridge   
 
 #git clone https://github.com/andrey1908/husky_tidy_bot_cv
 ADD husky_tidy_bot_cv/ /sources/catkin_ws/src/husky_tidy_bot_cv/
@@ -131,7 +108,7 @@ RUN git clone https://github.com/andrey1908/ultralytics.git /sources/catkin_ws/s
 #RUN git clone https://github.com/ultralytics/ultralytics.git /sources/catkin_ws/src/ultralytics
 
 ### initialize the ros_bridge submodule
-#RUN git submodule update --init
+RUN git submodule update --init
 
 
 # Install the ultralytics package
@@ -139,8 +116,7 @@ RUN pip install -e /sources/catkin_ws/src/ultralytics
 
 COPY entrypoint.sh /entrypoint.sh
 COPY entrypoint_rosbridge.sh /entrypoint_rosbridge.sh
-COPY play_ros2bag.sh /play_ros2bag.sh
-RUN chmod +x /entrypoint.sh /play_ros2bag.sh /entrypoint_rosbridge.sh
-#CMD ["/bin/bash", "-c", "source ~/.bashrc && ros2 run ros1_bridge dynamic_bridge"] 
-CMD ["/bin/bash", "-c", "/play_ros2bag.sh & /entrypoint_rosbridge.sh & /entrypoint.sh & wait"]
+COPY ros2_play_bag.sh /ros2_play_bag.sh
+RUN chmod +x /entrypoint.sh /ros2_play_bag.sh /entrypoint_rosbridge.sh 
+CMD ["/bin/bash", "-c", "/ros2_play_bag.sh & /entrypoint_rosbridge.sh & /entrypoint.sh & wait"]
 #CMD ["/bin/bash", "/entrypoint.sh"]

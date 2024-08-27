@@ -7,7 +7,7 @@ echo "Run rviz2"
 ros2 run rviz2 rviz2 &
 sleep 1
 
-ros2 bag play /resources/data/rosbag2_26.db3
+ros2 bag play /resources/data/rosbag2_26.db3 --loop
 
 for node in $(ros2 node list); do
   ros2 param set $node use_sim_time true

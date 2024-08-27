@@ -1,0 +1,82 @@
+cogmodel@ZBOX1:~$ docker exec -it ros bash
+root@ZBOX1:/sources/BoT-SORT# source /opt/ros/noetic/setup.bash
+
+cam2_left_camera_frame
+
+
+root@ZBOX1:/sources/BoT-SORT# source /sources/catkin_ws/devel/setup.bash
+root@ZBOX1:/sources/BoT-SORT# rostopic list 
+/DEPTH_INFO
+/cam1/zed_node_0/depth/camera_info
+/cam1/zed_node_0/depth/depth_registered
+/cam1/zed_node_0/left/camera_info
+/cam1/zed_node_0/left/image_rect_color/compressed
+/cam1/zed_node_0/right/camera_info
+/cam1/zed_node_0/right/image_rect_color/compressed
+/cam2/zed_node_1/depth/camera_info
+/cam2/zed_node_1/depth/depth_registered
+/cam2/zed_node_1/left/camera_info
+/cam2/zed_node_1/left/image_rect_color/compressed
+/cam2/zed_node_1/right/camera_info
+/cam2/zed_node_1/right/image_rect_color/compressed
+/location_status
+/object_gt_points_vis
+/object_point_cloud
+/object_points_vis
+/object_pose
+/object_pose_vis
+/rosout
+/rosout_agg
+/segmentation_labels
+/text_query_generation/cancel
+/text_query_generation/feedback
+/text_query_generation/goal
+/text_query_generation/result
+/text_query_generation/status
+/tf
+/tf_static
+root@ZBOX1:/sources/BoT-SORT# rostopic list -v
+
+Published topics:
+ * /rosout [rosgraph_msgs/Log] 5 publishers
+ * /rosout_agg [rosgraph_msgs/Log] 1 publisher
+ * /object_pose [husky_tidy_bot_cv/ObjectPose] 1 publisher
+ * /object_pose_vis [geometry_msgs/PoseStamped] 1 publisher
+ * /object_gt_points_vis [sensor_msgs/PointCloud2] 1 publisher
+ * /object_points_vis [sensor_msgs/PointCloud2] 1 publisher
+ * /tf [tf2_msgs/TFMessage] 2 publishers
+ * /location_status [std_msgs/String] 1 publisher
+ * /text_query_generation/status [actionlib_msgs/GoalStatusArray] 1 publisher
+ * /text_query_generation/result [communication_msgs/OpenSeeDSetterActionResult] 1 publisher
+ * /text_query_generation/feedback [communication_msgs/OpenSeeDSetterActionFeedback] 1 publisher
+ * /segmentation_labels [husky_tidy_bot_cv/Categories] 1 publisher
+ * /cam1/zed_node_0/depth/camera_info [sensor_msgs/CameraInfo] 1 publisher
+ * /cam1/zed_node_0/depth/depth_registered [sensor_msgs/Image] 1 publisher
+ * /cam1/zed_node_0/left/camera_info [sensor_msgs/CameraInfo] 1 publisher
+ * /cam1/zed_node_0/left/image_rect_color/compressed [sensor_msgs/CompressedImage] 1 publisher
+ * /cam1/zed_node_0/right/camera_info [sensor_msgs/CameraInfo] 1 publisher
+ * /cam1/zed_node_0/right/image_rect_color/compressed [sensor_msgs/CompressedImage] 1 publisher
+ * /cam2/zed_node_1/depth/camera_info [sensor_msgs/CameraInfo] 1 publisher
+ * /cam2/zed_node_1/depth/depth_registered [sensor_msgs/Image] 1 publisher
+ * /cam2/zed_node_1/left/camera_info [sensor_msgs/CameraInfo] 1 publisher
+ * /cam2/zed_node_1/left/image_rect_color/compressed [sensor_msgs/CompressedImage] 1 publisher
+ * /cam2/zed_node_1/right/camera_info [sensor_msgs/CameraInfo] 1 publisher
+ * /cam2/zed_node_1/right/image_rect_color/compressed [sensor_msgs/CompressedImage] 1 publisher
+ * /tf_static [tf2_msgs/TFMessage] 1 publisher
+
+Subscribed topics:
+ * /rosout [rosgraph_msgs/Log] 2 subscribers
+ * /rosout_agg [rosgraph_msgs/Log] 1 subscriber
+ * /DEPTH_INFO [sensor_msgs/CameraInfo] 2 subscribers
+ * /tf [tf2_msgs/TFMessage] 2 subscribers
+ * /tf_static [tf2_msgs/TFMessage] 1 subscriber
+ * /object_point_cloud [husky_tidy_bot_cv/ObjectPointCloud] 1 subscriber
+ * /object_gt_points_vis [sensor_msgs/PointCloud2] 1 subscriber
+ * /object_points_vis [sensor_msgs/PointCloud2] 1 subscriber
+ * /object_pose_vis [geometry_msgs/PoseStamped] 1 subscriber
+ * /location_status [std_msgs/String] 1 subscriber
+ * /text_query_generation/goal [communication_msgs/OpenSeeDSetterActionGoal] 1 subscriber
+ * /text_query_generation/cancel [actionlib_msgs/GoalID] 1 subscriber
+ * /text_query_generation/status [actionlib_msgs/GoalStatusArray] 1 subscriber
+
+

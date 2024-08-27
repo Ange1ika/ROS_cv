@@ -15,7 +15,7 @@ class ArucoSegmentCombiner:
         # Подписываемся на топики с использованием message_filters для синхронизации
         aruco_sub = message_filters.Subscriber("/aruco_image", Objects3d)
         segmentation_sub = message_filters.Subscriber("/segmentation_openseed", Objects)
-        camera_sub = message_filters.Subscriber("/camera/image_raw", Image)
+        camera_sub = message_filters.Subscriber("IMAGE_TOPIC", Image)
 
         # Создаем синхронизатор сообщений
         ts = message_filters.ApproximateTimeSynchronizer([aruco_sub, segmentation_sub, camera_sub], 10, 0.1)

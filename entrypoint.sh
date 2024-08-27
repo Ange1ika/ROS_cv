@@ -5,25 +5,31 @@ source /sources/catkin_ws/devel/setup.bash
 
 # Bag 1
 #export FIXED_FRAME=base_link
-export FIXED_FRAME=camera2_color_optical_frame # ros2
+
 #export FIXED_FRAME=realsense_gripper_link
 export TARGET_BAG=сoutput.bag
 #export RVIZ_CONF=/resources/data/testbag_full.rviz  
-export DEPTH_INFO=/camera2/camera2/depth/camera_info
+
 export RVIZ_CONF=/resources/data/rviz_full_conf_2.rviz
 #export DEPTH_TOPIC=/realsense_gripper/aligned_depth_to_color/image_raw  
-
-export DEPTH_TOPIC=/camera2/camera2/depth/image_rect_raw
-
-# /camera2/camera2/color/image_raw/compressedDepth  #топик на ros2
-#export DEPTH_TOPIC=/realsense_gripper/aligned_depth_to_color/image_raw
-export IMAGE_TOPIC=/camera2/camera2/color/image_raw/compressed  #топик на ros2
-export INFO_TOPIC=/camera2/camera2/depth/camera_info
 #export IMAGE_TOPIC=/realsense_gripper/color/image_raw/compressed
-
-
 #export IMAGE_TOPIC=/realsense_gripper/color/image_raw
 export DEPTH_TO_POINT_CLOUD_ALLOW_PYTHON_IMPLEMENTATION=1
+
+
+export INFO_TOPIC=/cam2/zed_node_1/left/camera_info
+export IMAGE_TOPIC=/cam2/zed_node_1/left/image_rect_color/compressed  #топик на ros2
+export DEPTH_TOPIC=/cam2/zed_node_1/depth/depth_registered
+export DEPTH_INFO=/cam2/zed_node_1/depth/camera_info
+
+
+#export INFO_TOPIC=/camera2/camera2/depth/camera_info
+#export IMAGE_TOPIC=/camera2/camera2/color/image_raw/compressed  #топик на ros2
+#export DEPTH_TOPIC=/camera2/camera2/depth/image_rect_raw
+#export DEPTH_INFO=/camera2/camera2/depth/camera_info
+
+
+export FIXED_FRAME=camera2_color_optical_frame # ros2
 
 echo "Run roscore"
 roscore &
@@ -66,14 +72,9 @@ python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/tracker_3d_node.py -vis 
 sleep 1
 
 
-#echo "Run aruco_node.py"
-#python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/aruco_node.py &
-#sleep 1
-
-#echo "Run aruco_seg_fusion"
-#python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/combine_data.py &
-#sleep 1
-
+echo "Run aruco_node.py"
+python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/aruco_node.py &
+sleep 1
 
 # Ожидание публикации изображения с метками ArUco
 #while :
@@ -118,6 +119,9 @@ do
     fi
 done
 
+echo "Run aruco_seg_fusion"
+python /sources/catkin_ws/src/husky_tidy_bot_cv/scripts/combine_data.py &
+sleep 1
 
 
 echo "Run data_aggregator.py"

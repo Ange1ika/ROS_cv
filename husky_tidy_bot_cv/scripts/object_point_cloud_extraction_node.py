@@ -26,16 +26,17 @@ def build_parser():
     # а camera_color_optical_frame ориентирован в соответствии с исходной системой координат в устройстве 
     # (для серии D400 это было бы X-вправо, Y-вниз, Z-вперед).
     
-    #parser.add_argument('--target-frame', type=str, default='base_link')
-    parser.add_argument('--target-frame', type=str, default='camera2_depth_optical_frame')  # for rosbag2
+    parser.add_argument('--target-frame', type=str, default='cam2_left_camera_optical_frame')
+    #parser.add_argument('--target-frame', type=str, default='camera2_depth_optical_frame')  # for rosbag2
     parser.add_argument('-vis', '--enable-visualization', action='store_true')
     return parser
+
 
 
 class ObjectPointCloudExtraction_node(ObjectPointCloudExtraction):
     def __init__(self, depth_info_topic, depth_topic, objects_topic,
                  out_object_point_cloud_topic, out_visualization_topic=None,
-                 target_frame='camera2_depth_optical_frame', erosion_size=0, pool_size=2):
+                 target_frame='cam2_left_camera_optical_frame', erosion_size=0, pool_size=2):
         print("Waiting for depth info message...")
         depth_info_msg = rospy.wait_for_message(depth_info_topic, CameraInfo)
         K = np.array(depth_info_msg.K).reshape(3, 3)
@@ -293,8 +294,8 @@ if __name__ == '__main__':
         #erosion_size=5, pool_size=2)
     
     object_pose_estimation_node = ObjectPointCloudExtraction_node(
-        "/camera2/camera2/depth/camera_info",
-        "/camera2/camera2/depth/image_rect_raw",
+        '/cam2/zed_node_1/depth/camera_info',
+        '/cam2/zed_node_1/depth/depth_registered',
         "/tracking", "/object_point_cloud",
         out_visualization_topic=out_visualization_topic,
         target_frame=args.target_frame,

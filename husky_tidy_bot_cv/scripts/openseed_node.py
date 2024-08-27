@@ -185,7 +185,7 @@ if __name__ == "__main__":
 #         "/home/administrator/zemskova_ts/husky_tidy_bot_cv_ws/src/openseed_src/model_final.pth",
 # #        "/home/wingrune/cv/OpenSeeD/configs/openseed/openseed_swint_lang_rosbag.yaml",
 # #        "/hdd/wingrune/openseed/output_finetune/model_0003599.pth",
-        "/camera2/camera2/color/image_raw/compressed", "/segmentation_openseed", labels_topic="/segmentation_labels",
+        '/cam2/zed_node_1/left/image_rect_color/compressed', "/segmentation_openseed", labels_topic="/segmentation_labels",
         out_visualization_topic=out_visualization_topic, min_score_seen=0.5, min_score_unseen=0.1)
     segmentation_node.start()
 

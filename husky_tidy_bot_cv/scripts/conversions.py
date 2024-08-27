@@ -185,8 +185,9 @@ def from_clasess_msg(cats_msg):
 def create_point_cloud(point_arrays):
     header = Header()
     header.stamp = rospy.Time.now()
+    #header.frame_id = "local_map_lidar" 
     header.frame_id = "local_map_lidar" 
-
+    #camera2_depth_optical_frame'
     fields = [PointField('x', 0, PointField.FLOAT32, 1),
               PointField('y', 4, PointField.FLOAT32, 1),
               PointField('z', 8, PointField.FLOAT32, 1),

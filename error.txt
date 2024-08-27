@@ -1,0 +1,36 @@
+Received objects_msg with timestamp: 1723565791.9591658
+Extracting point cloud for object ID 109
+Starting point cloud extraction...
+Processing ROI 0:
+  Depth shape: (480, 848)
+  Mask shape: (287, 296)
+  ROI shape: (slice(180, 467, None), slice(702, 998, None))
+Processing ROI 1:
+  Depth shape: (480, 848)
+  Mask shape: (85, 75)
+  ROI shape: (slice(79, 164, None), slice(419, 494, None))
+Processing ROI 2:
+  Depth shape: (480, 848)
+  Mask shape: (85, 141)
+  ROI shape: (slice(0, 85, None), slice(894, 1035, None))
+[ERROR] [1724601739.796201]: bad callback: <bound method Subscriber.callback of <message_filters.Subscriber object at 0x7e00c8340cd0>>
+Traceback (most recent call last):
+  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/topics.py", line 750, in _invoke_callback
+    cb(msg)
+  File "/opt/ros/noetic/lib/python3/dist-packages/message_filters/__init__.py", line 76, in callback
+    self.signalMessage(msg)
+  File "/opt/ros/noetic/lib/python3/dist-packages/message_filters/__init__.py", line 58, in signalMessage
+    cb(*(msg + args))
+  File "/opt/ros/noetic/lib/python3/dist-packages/message_filters/__init__.py", line 330, in add
+    self.signalMessage(*msgs)
+  File "/opt/ros/noetic/lib/python3/dist-packages/message_filters/__init__.py", line 58, in signalMessage
+    cb(*(msg + args))
+  File "/sources/catkin_ws/src/husky_tidy_bot_cv/scripts/object_point_cloud_extraction_node.py", line 186, in callback
+    object_point_cloud_msg = self.extract_point_cloud_ros(
+  File "/sources/catkin_ws/src/husky_tidy_bot_cv/scripts/object_point_cloud_extraction_node.py", line 222, in extract_point_cloud_ros
+    object_point_cloud, object_index = self.extract_point_cloud(depth,
+  File "/sources/catkin_ws/src/husky_tidy_bot_cv/scripts/object_point_cloud_extraction.py", line 64, in extract_point_cloud
+    depth_in_roi[mask_in_roi == 0] = 0
+IndexError: boolean index did not match indexed array along dimension 1; dimension is 146 but corresponding boolean dimension is 296
+
+а разрешение изображения с камеры 1280*720
