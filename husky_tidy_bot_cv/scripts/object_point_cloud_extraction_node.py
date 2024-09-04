@@ -26,8 +26,8 @@ def build_parser():
     # а camera_color_optical_frame ориентирован в соответствии с исходной системой координат в устройстве 
     # (для серии D400 это было бы X-вправо, Y-вниз, Z-вперед).
     
-    parser.add_argument('--target-frame', type=str, default='cam2_left_camera_optical_frame')
-    #parser.add_argument('--target-frame', type=str, default='camera2_depth_optical_frame')  # for rosbag2
+
+    parser.add_argument('--target-frame', type=str, default='camera2_depth_optical_frame')  # for rosbag2
     parser.add_argument('-vis', '--enable-visualization', action='store_true')
     return parser
 
@@ -36,7 +36,7 @@ def build_parser():
 class ObjectPointCloudExtraction_node(ObjectPointCloudExtraction):
     def __init__(self, depth_info_topic, depth_topic, objects_topic,
                  out_object_point_cloud_topic, out_visualization_topic=None,
-                 target_frame='cam2_left_camera_optical_frame', erosion_size=0, pool_size=2):
+                 target_frame='map', erosion_size=0, pool_size=2):
         print("Waiting for depth info message...")
         depth_info_msg = rospy.wait_for_message(depth_info_topic, CameraInfo)
         K = np.array(depth_info_msg.K).reshape(3, 3)
@@ -89,7 +89,7 @@ class ObjectPointCloudExtraction_node(ObjectPointCloudExtraction):
 
 
         self.sync_sub = ApproximateTimeSynchronizer(
-            [self.depth_sub, self.objects_sub], queue_size=10, slop=0.2)
+            [self.depth_sub, self.objects_sub], queue_size=20, slop=0.2)
         self.sync_sub.registerCallback(self.callback)
         
         #self.sync_sub = message_filters.TimeSynchronizer(

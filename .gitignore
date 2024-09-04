@@ -1,2 +1,16 @@
 resources/
 cuda_12.1.0_530.30.02_linux.run
+
+# Игнорирование rosbag файлов
+*.bag
+bag_521_28_08_2024/
+
+# Игнорирование Docker образа
+docker_realsense_ros2_latest.tar
+
+# Игнорирование старой рабочей директории ROS2
+ros2_old_ws/
+
+# Игнорирование ros_bridge каталога
+ros_bridge/
+

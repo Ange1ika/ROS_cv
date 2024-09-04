@@ -3,7 +3,14 @@ source /opt/ros/noetic/setup.bash
 source /sources/catkin_ws/devel/setup.bash
 source /opt/ros/foxy/setup.bash
 
+echo $ROS_LOCALHOST_ONLY
+echo $RMW_IMPLEMENTATION 
+python3 run_ros_bridge.py --build
+     
 
+cd ~/ros_bridge/docker_ros_bridge/scripts
+python3 run_ros_bridge.py --print-pairs
+--with-roscore
 
 rqt_bag
 
@@ -19,6 +26,10 @@ realsense_gripper_link
 
 
 roscd log && tail -f latest/rosout.log
+
+
+
+
 
 
 
@@ -55,6 +66,9 @@ Subscribed to objects topic: /tracking (type: Objects)
 Subscribing to topics...
 Spinning...
 Setting up services...
+
+
+docker rmi $(docker images -f "dangling=true" -q)
 
 
 

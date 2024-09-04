@@ -1,4 +1,5 @@
-Header header
+std_msgs/Header header
+
 int32[] classes_ids
 float64[] scores
 int32[] tracking_ids

@@ -1,4 +1,4 @@
-Header header  # same as in point_cloud
+std_msgs/Header header  # same as in point_cloud
 
 int32 class_id
 int32 tracking_id

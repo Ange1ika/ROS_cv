@@ -1,4 +1,5 @@
+# Request
 int32 object_id  # class or tracking id
 ---
-time process_after_stamp  # all messages with stamps <= process_after_stamp should be rejected
+builtin_interfaces/Time process_after_stamp  # all messages with stamps <= process_after_stamp should be rejected
 

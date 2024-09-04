@@ -138,7 +138,7 @@ if __name__ == "__main__":
     else:
         out_visualization_topic = None
     
-    image_topic = os.getenv("IMAGE_TOPIC")
+    image_topic = os.getenv('/cam2/zed_node_1/left/image_rect_color/compressed')
     tracking_node = BoTSORT_node("/segmentation",
         image_topic,
         "/tracking",

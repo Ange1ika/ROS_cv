@@ -136,11 +136,22 @@ RUN git clone https://github.com/andrey1908/ultralytics.git /sources/catkin_ws/s
 
 # Install the ultralytics package
 RUN pip install -e /sources/catkin_ws/src/ultralytics
+RUN apt-get install -y ros-foxy-rmw-cyclonedds-cpp
+
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+ENV ROS_LOCALHOST_ONLY=1
 
 COPY entrypoint.sh /entrypoint.sh
-COPY entrypoint_rosbridge.sh /entrypoint_rosbridge.sh
+#COPY entrypoint_rosbridge.sh /entrypoint_rosbridge.sh
 COPY play_ros2bag.sh /play_ros2bag.sh
-RUN chmod +x /entrypoint.sh /play_ros2bag.sh /entrypoint_rosbridge.sh
+#RUN chmod +x /entrypoint.sh /play_ros2bag.sh /entrypoint_rosbridge.sh
+RUN chmod +x /entrypoint.sh /play_ros2bag.sh
 #CMD ["/bin/bash", "-c", "source ~/.bashrc && ros2 run ros1_bridge dynamic_bridge"] 
-CMD ["/bin/bash", "-c", "/play_ros2bag.sh & /entrypoint_rosbridge.sh & /entrypoint.sh & wait"]
-#CMD ["/bin/bash", "/entrypoint.sh"]
+
+#WORKDIR /ros_bridge/docker_ros_bridge/scripts
+#CMD ["python3", "run_ros_bridge.py", "--build"]
+#CMD ["python3", "run_ros_bridge.py", "--print-pairs"]
+
+#CMD ["/bin/bash", "-c", "/play_ros2bag.sh & /entrypoint.sh & wait"]
+
+CMD ["/bin/bash", "/entrypoint.sh"]

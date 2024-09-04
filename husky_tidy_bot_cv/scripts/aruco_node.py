@@ -27,8 +27,8 @@ class ArucoNode:
         #print("podpiska na topik")
         #self.image_sub = rospy.Subscriber('/camera2/camera2/color/image_raw/compressed', CompressedImage, self.image_callback)
         #self.info_sub = rospy.Subscriber('/camera2/camera2/color/camera_info', CameraInfo, self.info_callback)
-        self.image_sub = rospy.Subscriber('IMAGE_TOPIC', CompressedImage, self.image_callback)
-        self.info_sub = rospy.Subscriber('INFO_TOPIC', CameraInfo, self.info_callback)
+        self.image_sub = rospy.Subscriber('/cam2/zed_node_1/left/image_rect_color/compressed', CompressedImage, self.image_callback)
+        self.info_sub = rospy.Subscriber('/cam2/zed_node_1/left/camera_info', CameraInfo, self.info_callback)
 
         # Публикация результата
         self.objects3d_pub = rospy.Publisher('/aruco_image', Objects3d, queue_size=1)

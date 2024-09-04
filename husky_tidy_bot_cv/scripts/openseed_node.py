@@ -96,7 +96,7 @@ class OpenSeeD_node(OpenSeeD_wrapper):
 
     def start(self):
         image_topic_type, _, _ = rostopic.get_topic_class(self.image_topic)
-        print("self.image_topic, image_topic_type", self.image_topic, image_topic_type)
+        #print("self.image_topic, image_topic_type", self.image_topic, image_topic_type)
         self.image_sub = rospy.Subscriber(
             self.image_topic, image_topic_type, self.callback,
             queue_size=1, buff_size=2 ** 24)
@@ -104,7 +104,7 @@ class OpenSeeD_node(OpenSeeD_wrapper):
         
 
         cats_topic_type, _, _ = rostopic.get_topic_class(self.labels_topic)
-        print("self.labels_topic, cats_topic_type", self.labels_topic, cats_topic_type)
+        #print("self.labels_topic, cats_topic_type", self.labels_topic, cats_topic_type)
         self.cats_sub = rospy.Subscriber(
             self.labels_topic, cats_topic_type, self.callback_cats,
             queue_size=1, buff_size=2 ** 24)
@@ -117,7 +117,7 @@ class OpenSeeD_node(OpenSeeD_wrapper):
                 elif image_msg._type == "sensor_msgs/CompressedImage":
                     image = self.bridge.compressed_imgmsg_to_cv2(image_msg, desired_encoding='bgr8')
                     height, width = image.shape[:2]
-                    print(f'Image resolution: {width}x{height}')
+                    #print(f'Image resolution: {width}x{height}')
                 else:
                     raise RuntimeError("Unkown message type")
 
@@ -155,7 +155,7 @@ class OpenSeeD_node(OpenSeeD_wrapper):
             cat_id: cat_name
             for (cat_id, cat_name) in zip(self.categories_with_features_ids, self.categories_with_features)
         }
-        rospy.loginfo(f'Changed OpenSeeD categories to {labels_dict}')
+        #rospy.loginfo(f'Changed OpenSeeD categories to {labels_dict}')
 
 
 
@@ -174,7 +174,7 @@ if __name__ == "__main__":
     else:
         out_visualization_topic = None
     
-    print(args)
+    #print(args)
     
     categories = [cat["name"] for cat in FIXED_CATEGORIES]
     
@@ -189,7 +189,7 @@ if __name__ == "__main__":
         out_visualization_topic=out_visualization_topic, min_score_seen=0.5, min_score_unseen=0.1)
     segmentation_node.start()
 
-    print("Spinning...")
+    #print("Spinning...")
     rospy.spin()
 
     print()

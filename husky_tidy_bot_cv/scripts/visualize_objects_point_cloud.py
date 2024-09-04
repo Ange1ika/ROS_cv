@@ -108,7 +108,7 @@ if __name__ == '__main__':
 
     print("Waiting for depth info message...")
     depth_info_msg = rospy.wait_for_message(
-        "INFO_TOPIC", CameraInfo)
+        "/cam2/zed_node_1/depth/camera_info", CameraInfo)
     K = np.array(depth_info_msg.K).reshape(3, 3)
     D = np.array(depth_info_msg.D)
     assert np.all(D == 0)
